@@ -1,7 +1,7 @@
 from os import environ
 from Modules.routes import app
 
-app.run(host='0.0.0.0')
+app.run(host='0.0.0.0',port='8082')
 # import flask
 
 # app = flask.Flask(__name__)
