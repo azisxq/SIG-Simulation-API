@@ -326,3 +326,28 @@ def calculate_cost(data_simulation, data_cost):
     data_simulation_cost['opco md excl tax'] = list(map(lambda a,b,c,d,e,f,g,h,i,j,k:OpcoMDExTax(a,b,c,d,e,f,g,h,i,j,k),data_simulation_cost['entity'],data_simulation_cost['harga tebus excl tax'],data_simulation_cost['var prod'],data_simulation_cost['var packer'],data_simulation_cost['kmsn'],data_simulation_cost['fix prod'],data_simulation_cost['fix packer'],data_simulation_cost['trn'],data_simulation_cost['oa'],data_simulation_cost['material type'],data_simulation_cost['packaging mode']))
     data_simulation_cost['opco md netto excl tax'] = list(map(lambda a,b,c,d,e:OpcoMDNettoExTax(a,b,c,d,e),data_simulation_cost['entity'],data_simulation_cost['opco md excl tax'],data_simulation_cost['oa'],data_simulation_cost['com'],data_simulation_cost['biaya lain']))
     return data_simulation_cost
+
+
+def grouping_province(prov):
+    if prov.lower() in ['jawa barat', 'jawa timur', 'banten','jawa tengah', 'bali', 'di yogyakarta', 'dki jakarta']:
+        return 1
+    else:
+        return 0
+
+
+def transform_encoded_new_cust(col,val):
+	encoder_file = './Modules/data/b2b_new_cust_{0!s}_target_encoding.csv'.format(col)
+	encoder_pd = pd.read_csv(encoder_file)
+	data_filter=encoder_pd[encoder_pd[col]==val].reset_index()
+	encoded_var = '{0!s}_kfold_target_enc'.format(col)
+	return data_filter[encoded_var][0]
+
+
+def get_mapping_district_var(engine,tabel_mapping_var='mapping_district_var_customer_baru_test'):
+	statement = """
+    	select * from {0!s}
+    """.format(tabel_mapping_var)
+	data_mapping_district_var = pd.read_sql_query(statement, engine)
+	return data_mapping_district_var
+
+
