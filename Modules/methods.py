@@ -338,7 +338,7 @@ def grouping_province(prov):
 def transform_encoded_new_cust(col,val):
 	encoder_file = './Modules/data/b2b_new_cust_{0!s}_target_encoding.csv'.format(col)
 	encoder_pd = pd.read_csv(encoder_file)
-	data_filter=encoder_pd[encoder_pd[col]==val].reset_index()
+	data_filter = encoder_pd[encoder_pd[col]==val].reset_index()
 	encoded_var = '{0!s}_kfold_target_enc'.format(col)
 	return data_filter[encoded_var][0]
 

@@ -137,27 +137,27 @@ def b2b_new_cust():
 			'status': 'please specify demand input'
 		}), 412
 
-	product_type = utils.validate(
-		request.args, 'product_type',
+	material_type = utils.validate(
+		request.args, 'material_type',
 		str, None
 	)
-	if product_type is None:
+	if material_type is None:
 		return jsonify({
-			'status': 'please specify product type input'
+			'status': 'please specify material type input'
 		}), 412
-	if product_type.lower() not in config.b2b_new_cust['product_type']:
+	if material_type.lower() not in config.b2b_new_cust['material_type']:
 		return jsonify({
-			'status': 'product type not in model',
-			'details': 'you can only choose between this values {0!s}'.format(config.b2b_new_cust['product_type'])
+			'status': 'material type not in model',
+			'details': 'you can only choose between this values {0!s}'.format(config.b2b_new_cust['material_type'])
 		}), 412
 
 	packaging_mode = utils.validate(
 		request.args, 'packaging_mode',
 		str, 0
 	)
-	if product_type is None:
+	if packaging_mode is None:
 		return jsonify({
-			'status': 'please specify product type input'
+			'status': 'please specify packaging mode input'
 		}), 412
 	if packaging_mode.lower() not in config.b2b_new_cust['packaging_mode']:
 		return jsonify({
@@ -208,8 +208,8 @@ def b2b_new_cust():
 		'district':district.lower(),
 		'district_ref':district_ref.lower(),
 		'demand':demand,
-		'product_type':product_type.lower(),
-		'product_type_kfold_target_enc':transform_encoded_new_cust('product_type',product_type.lower()),
+		'material_type':material_type.lower(),
+		'material_type_kfold_target_enc':transform_encoded_new_cust('material_type',material_type.lower()),
 		'packaging_mode':packaging_mode.lower(),
 		'packaging_mode_kfold_target_enc':transform_encoded_new_cust('packaging_mode',packaging_mode.lower()),
 		'term_of_payment':term_of_payment,
@@ -226,14 +226,14 @@ def b2b_new_cust():
 	)
 	print('load data selesai')
 	data_mapping['district'] = list(map(lambda x: x.lower(),data_mapping['district']))
-	data_mapping['product_type'] = list(map(lambda x: x.lower(),data_mapping['product_type']))
+	data_mapping['material_type'] = list(map(lambda x: x.lower(),data_mapping['material_type']))
 	data_mapping['packaging_mode'] = list(map(lambda x: x.lower(),data_mapping['packaging_mode']))
 
 	merge_mapping = pd.merge(
 		b2b_req,
 		data_mapping,
-		left_on=['district','product_type','packaging_mode'],
-		right_on=['district','product_type','packaging_mode'],
+		left_on=['district','material_type','packaging_mode'],
+		right_on=['district','material_type','packaging_mode'],
 		how='left'
 	)
 	print(merge_mapping)
@@ -246,26 +246,30 @@ def b2b_new_cust():
 			merge_mapping = pd.merge(
 				b2b_req,
 				data_mapping,
-				left_on=['district_ref','product_type','packaging_mode'],
-				right_on=['district','product_type','packaging_mode'],
+				left_on=['district_ref','material_type','packaging_mode'],
+				right_on=['district','material_type','packaging_mode'],
 				how='left'
 			)
 			if len(merge_mapping.dropna())==0:
 				return jsonify({
-					'status': 'please check district ref, product type, and packaging type input because data with its combination is not found'
+					'status': 'please check district ref, material type, and packaging type input because data with its combination is not found'
 				}), 400
 			else:
 				pred = apply_model_cust_new_b2b(merge_mapping)
+				last_cbp_distrik = merge_mapping['cbp_sig'][0]
 				print(pred)
 				return jsonify({
 					'recommended cbp': pred[0],
+					'last cbp distrik': last_cbp_distrik,
 					'status': 'ok'
 				}), 200
 	else:
 		pred = apply_model_cust_new_b2b(merge_mapping)
+		last_cbp_distrik = merge_mapping['cbp_sig'][0]
 		print(pred)
 		return jsonify({
 			'recommended cbp': pred[0],
+			'last cbp distrik': last_cbp_distrik,
 			'status': 'ok'
 		}), 200
 

@@ -1,5 +1,5 @@
 b2b_new_cust = {
-	"product_type" : ['ultrapro curah', 'ezpro curah', 'ultrapro jb', 'sprintpro curah', 'pwrpro curah'],
+	"material_type" : ['opc premium', 'opc reguler', 'pcc premium', 'pcc', 'type v', 'putih'],
 	"packaging_mode" :['bulk','jumbo bag'],
 	"segmentsi" : ['cpm & kontraktor', 'beton rmx', 'bumn'],
 	"cluster":['bronze', 'platinum', 'silver', 'gold']	

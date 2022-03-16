@@ -9,7 +9,7 @@ def apply_model_cust_new_b2b(data):
 		'plant_to_distance_sig_nbc',
 		'packaging_mode_kfold_target_enc',
 		'cbp_nbc',
-		'product_type_kfold_target_enc',
+		'material_type_kfold_target_enc',
 		'is_jawa_bali',
 		'cbp_sig',
 		'plant_to_distance_sig'
