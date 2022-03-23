@@ -145,7 +145,7 @@ def b2b_new_cust():
 		return jsonify({
 			'status': 'please specify material type input'
 		}), 412
-	if material_type.lower() not in config.b2b_new_cust['material_type']:
+	if material_type.upper() not in config.b2b_new_cust['material_type']:
 		return jsonify({
 			'status': 'material type not in model',
 			'details': 'you can only choose between this values {0!s}'.format(config.b2b_new_cust['material_type'])
@@ -209,7 +209,7 @@ def b2b_new_cust():
 		'district_ref':district_ref.lower(),
 		'demand':demand,
 		'material_type':material_type.lower(),
-		'material_type_kfold_target_enc':transform_encoded_new_cust('material_type',material_type.lower()),
+		'material_type_kfold_target_enc':transform_encoded_new_cust('material_type',material_type.upper()),
 		'packaging_mode':packaging_mode.lower(),
 		'packaging_mode_kfold_target_enc':transform_encoded_new_cust('packaging_mode',packaging_mode.lower()),
 		'term_of_payment':term_of_payment,
@@ -229,6 +229,12 @@ def b2b_new_cust():
 	data_mapping['material_type'] = list(map(lambda x: x.lower(),data_mapping['material_type']))
 	data_mapping['packaging_mode'] = list(map(lambda x: x.lower(),data_mapping['packaging_mode']))
 
+	print(b2b_req['district'])
+	print(b2b_req['material_type'])
+	print(b2b_req['packaging_mode'])
+	print(data_mapping)
+
+	
 	merge_mapping = pd.merge(
 		b2b_req,
 		data_mapping,
@@ -236,7 +242,14 @@ def b2b_new_cust():
 		right_on=['district','material_type','packaging_mode'],
 		how='left'
 	)
-	print(merge_mapping)
+	if len(merge_mapping.dropna())==0:
+		merge_mapping = pd.merge(
+			b2b_req,
+			data_mapping,
+			left_on=['district','material_type'],
+			right_on=['district','material_type'],
+			how='left'
+		)
 	if len(merge_mapping.dropna())==0:
 		if district_ref is None:
 			return jsonify({
@@ -250,6 +263,14 @@ def b2b_new_cust():
 				right_on=['district','material_type','packaging_mode'],
 				how='left'
 			)
+			if len(merge_mapping.dropna())==0:
+				merge_mapping = pd.merge(
+					b2b_req,
+					data_mapping,
+					left_on=['district_ref','material_type'],
+					right_on=['district','material_type'],
+					how='left'
+				)
 			if len(merge_mapping.dropna())==0:
 				return jsonify({
 					'status': 'please check district ref, material type, and packaging type input because data with its combination is not found'
