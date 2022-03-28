@@ -34,18 +34,35 @@ def get_flag_change(data_simulation, flag):
     return data_flag
 
 
+def grouping_entity(entity,material):
+    if entity == 'SBA':
+        return "ANDALAS"
+    elif entity == 'SBI':
+        if material == 'PCC PREMIUM':
+            return "POWERMAX"
+        elif material == "MASONRY":
+            return "MASONRY"
+        else:
+            return "DYNAMIX"
+    else:
+        return entity
+
+
 def prep_cbp_modelling_retail(data_simulation, data_predict):
     data_simulation_retail = get_flag_change(data_simulation,'Price')
+
+    data_simulation_retail['brand_name'] = list(map(lambda x,y: grouping_entity(x,y),data_simulation_retail['entity'],data_simulation_retail['material type']))
     data_model = pd.merge(
         data_simulation_retail,
         data_predict,
-        on=['period', 'year', 'month', 'province', 'entity','region smi', 'district desc smi']
+        left_on=['period', 'year','province','brand_name','packaging weight', 'district desc smi'],
+        right_on=['period', 'year', 'province_name','brand_name','kemasan', 'district_name']
     )
-    data_model['gpm'] = data_model['gpm_x']
+
     data_model['prediction_price'] = data_model['prediction_price_x']
-    data_model['prediction_volume'] = data_model['prediction_volume_x']
-    data_model=data_model[['period', 'year', 'month', 'province', 'ship to code', 'ship to name',
-       'material type', 'packaging mode', 'packaging weight', 'entity',
+    data_model['prediction_volume'] = data_model['predict_med_new']
+    data_model=data_model[['period', 'province', 'ship to code', 'ship to name',
+       'material type', 'packaging mode', 'year','month','packaging weight', 'entity',
        'region smi', 'district desc smi', 'company code/opco',
        'productive plant', 'shipping station l1 desc', 'incoterm', 'oa',
        'var prod', 'trn', 'kmsn', 'var packer', 'fix packer', 'fix prod',
@@ -57,32 +74,31 @@ def prep_cbp_modelling_retail(data_simulation, data_predict):
        'harga jual sub dist', 'harga reguler', 'harga tebus incl tax',
        'harga tebus excl tax', 'opco md excl tax', 'opco md netto excl tax',
        'termofpayment', 'model',
-       'simulation_status', 'flag_change', 'volume_sig', 'brand_nbc',
-       'volume_nbc', 'disparitas_volume', 'disparitas_rbp', 'disparitas_ms',
-       'stock_level', 'growth_rbp_6mo', 'growth_nbc_6mo', 'avg_rbp_sig_6mo',
-       'avg_rbp_nbc_6mo', 
-       'rbp_sig', 'rbp_nbc', 'ms_sig', 'ms_nbc',
-       'province_kfold_target_enc', 'entity_kfold_target_enc',
-       'district desc smi_kfold_target_enc', 'gpm', 'prediction_price',
-       'prediction_volume']]
+       'simulation_status', 'flag_change', 'is_seasonality', 'is_promo', 'ms_brand', 
+       'volume_brand', 'rbp_lm_nbc',
+	   'stok_level', 'growth_rbp_3month', 'growth_rbp_6month','growth_volume_1month', 'kemasan_kfold_target_enc',
+	   'brand_name_kfold_target_enc', 'prediction_price','predict_med_new',
+       'prediction_volume','gpm','simulation_id']]
     return data_model
 
 
 def prep_cbp_modelling_b2b(data_simulation, data_predict):
     data_simulation_b2b = get_flag_change(data_simulation,'Price')
+
     data_model = pd.merge(
         data_simulation_b2b,
         data_predict,
-        right_on=['period', 'year', 'month', 'province', 'ship_to_name', 'material_type'],
-        left_on=['period', 'year', 'month', 'province', 'ship to name', 'material type']
+        right_on=['period', 'year', 'province', 'ship_to_code', 'material_type'],
+        left_on=['period', 'year', 'province', 'ship to code', 'material type']
     )
+    
     data_model['prediction_price'] = data_model['prediction_price_x']
     data_model['prediction_volume'] = data_model['prediction_volume_x']
     data_model['ship to name'] = data_model['ship_to_name']
     data_model['ship to code'] = data_model['ship_to_code']
     data_model['material type'] = data_model['material_type']
-
-    data_model=data_model[['period', 'year', 'month', 'province', 'ship to code', 'ship to name',
+    data_model['last_price'] = data_model['last_price_y']
+    data_model=data_model[['period', 'year','month', 'province', 'ship to code', 'ship to name',
        'material type', 'packaging mode', 'packaging weight', 'entity',
        'region smi', 'district desc smi', 'gpm', 'company code/opco',
        'productive plant', 'shipping station l1 desc', 'incoterm', 'oa',
@@ -96,16 +112,17 @@ def prep_cbp_modelling_b2b(data_simulation, data_predict):
        'harga tebus excl tax', 'opco md excl tax', 'opco md netto excl tax',
        'termofpayment', 'model',
        'simulation_status', 'flag_change', 'group_pelanggan', 'ship_to_name',
-       'ship_to_code', 'material_type', 'is_seasonality', 'volume_sig',
-       'sow_sig', 'cbp_sig', 'brand_nbc', 'volume_nbc', 'sow_nbc', 'cbp_nbc',
-       'disparitas_volume', 'disparitas_cbp', 'disparitas_sow',
-       'avg_buying_vol_6mo', 'avg_buying_vol_3mo', 'buying_vol_2yr',
-       'buying_vol_1yr', 'buying_vol_6mo', 'buying_freq_2yr',
-       'buying_freq_1yr', 'buying_freq_6_mo', 'plantdistancesig',
-       'plantdistancenbc',
-       'province_kfold_target_enc', 'ship_to_name_kfold_target_enc',
+       'ship_to_code', 'material_type', 'volume_sig_prov',
+       'last_sow_sig_prov', 'cbp_sig_prov', 'brand_nbc_prov', 'volume_nbc_prov', 'last_sow_nbc_prov', 'cbp_nbc_prov',
+       'last_gap_volume_to_nbc_prov', 'last_gap_cbp_to_nbc_prov', 'last_gap_sow_to_nbc_prov',
+       'avg_vol_6m', 'avg_vol_3m', 'last_sum_vol_2y',
+       'last_sum_vol_1y', 'last_sum_vol_6m', 'last_freq_vol_2y',
+       'last_freq_vol_1y', 'last_freq_vol_6m', 'plant_to_distance_sig',
+       'plant_to_distance_sig_nbc',
+       'province_kfold_target_enc',
        'material_type_kfold_target_enc', 'prediction_price',
-       'prediction_volume']]
+       'prediction_volume','gpm','simulation_id']]
+
     return data_model
 
 
@@ -113,13 +130,53 @@ def calculate_gap_cbp(price,last_price):
     return price-last_price
 
 
-def prep_vol_modelling_b2b(data_simulation):
+def prep_vol_modelling_b2b(data_simulation, data_predict):
     data_model = get_flag_change(data_simulation,'Volume')
+    data_predict = data_predict.groupby(['period','ship_to_name','ship_to_code','province','district','group_pelanggan','material_type']).first().reset_index()
+    data_model = pd.merge(
+        data_simulation,
+        data_predict,
+        right_on=['period', 'province', 'ship_to_code', 'material_type'],
+        left_on=['period', 'province', 'ship to code', 'material type']
+    )
     if len(data_model)>0:
-        data_model['gap_cbp_pcc'] = list(map(lambda x,y:calculate_gap_cbp(x,y),data_model['prediction_price'],data_model['last_price']))
-        return data_model
+    	material_type = data_model['material_type']
+    	material_type = material_type.replace(' ','_')
+    	material_type = material_type.lower()
+    	data_model['gap_cbp_{0!s}'.format(material_type)] = list(map(lambda x,y:calculate_gap_cbp(x,y),data_model['prediction_price'],data_model['last_price']))
+    	return data_model
     else:
-        return data_model
+    	return data_model
+
+
+def prep_vol_modelling_retail(data_simulation, data_predict):
+    data_simulation_retail = get_flag_change(data_simulation,'Volume')
+    data_simulation_retail['brand_name'] = list(map(lambda x,y: grouping_entity(x,y),data_simulation_retail['entity'],data_simulation_retail['material type']))
+    data_predict = data_predict.groupby(['period', 'district_name', 'province_name', 'district_ret','brand_name', 'kemasan']).first().reset_index()
+
+    data_model = pd.merge(
+        data_simulation_retail,
+        data_predict,
+        right_on=['period', 'district_name', 'kemasan', 'brand_name'],
+        left_on=['period', 'district desc smi', 'packaging weight','brand_name']
+    )
+    if len(data_model)>0:
+    	material_type = data_model['brand']
+    	material_type = material_type.replace(' ','_')
+    	material_type = material_type.lower()
+    	data_model['gap_cbp_{0!s}'.format(material_type)] = list(map(lambda x,y:calculate_gap_cbp(x,y),data_model['prediction_price'],data_model['last_price']))
+    	return data_model
+    else:
+    	return data_model
+
+
+def loop_apply_model_retail(brand_name,data_model,model_elasticity,var_x):
+	data_model_material = data_model[data_model['brand_name']==brand_name]
+	algorithm = model_elasticity['material_type']
+	file = open(F"./Modules/data/{algorithm}",'rb')
+	volume_model = pickle.load(file)
+	data_model_material['prediction_volume'] = volume_model.predict(data_model_material[var_x])
+	return data_model_material
 
 
 def apply_model_b2b(data_model, flag):
@@ -140,37 +197,47 @@ def apply_model_b2b(data_model, flag):
         data_model['prediction_price_simulation'] = price_model.predict(data_model[var_x])
         return data_model
     elif flag == 'Volume':
-        file = open("./Modules/data/price_elasticity_model_b2b.pkl",'rb')
-        volume_model = pickle.load(file)
-        file.close()
-        var_x = ['gap_cbp_pcc']
-        data_model['prediction_volume'] = volume_model.predict(data_model[var_x])
-        return data_model
+    	var_x = ['gap_cbp_pcc',
+           'gap_cbp_opc_reguler', 'gap_cbp_opc_premium', 'gap_cbp_owc',
+           'gap_cbp_putih', 'gap_cbp_pcc_premium', 'gap_cbp_type_v', 'gap_cbp_sbc',
+           'gap_cbp_type_ii', 'gap_cbp_duramax', 'gap_cbp_maxstrength',
+           'gap_cbp_ppc']
+    	data_res = pd.DataFrame()
+    	for material in data_model['material_type'].unique():
+    		data_model_material = loop_apply_model_retail(material,data_model,model_elasticity,x)
+    		data_res.append(data_model_material)
+    	return data_res
 
 
 def apply_model_retail(data_model, flag):
     if flag == 'Price':
-        file = open("./Modules/data/cbp_model_retail.pkl",'rb')
+        file = open("./Modules/data/model_prediction_retail_rbp.pkl",'rb')
         price_model = pickle.load(file)
         file.close()
         var_x = [
-            'entity_kfold_target_enc','growth_rbp_6mo','ms_nbc',
-            'ms_sig','rbp_sig','disparitas_volume',
-            'avg_rbp_nbc_6mo','volume_sig','prediction_volume',
-            'disparitas_rbp','disparitas_ms','rbp_nbc',
-            'district desc smi_kfold_target_enc',
-            'volume_nbc','gpm','province_kfold_target_enc',
-            'avg_rbp_sig_6mo','stock_level','growth_nbc_6mo'
+            'is_seasonality',
+			'is_promo',
+			'ms_brand',
+			'volume_brand',
+			'rbp_lm_nbc',
+			'stok_level',
+			'growth_rbp_3month',
+			'growth_rbp_6month',
+			'growth_volume_1month',
+			'kemasan_kfold_target_enc',
+			'brand_name_kfold_target_enc'
         ]
         data_model['prediction_price_simulation'] = price_model.predict(data_model[var_x])
         return data_model
     elif flag == 'Volume':
-        file = open("./Modules/data/price_elasticity_model_b2b.pkl",'rb')
-        volume_model = pickle.load(file)
-        file.close()
-        var_x = ['gap_cbp_pcc']
-        data_model['prediction_volume'] = volume_model.predict(data_model[var_x])
-        return data_model
+        var_x = ['gap_cbp_andalas', 'gap_cbp_dynamix', 'gap_cbp_masonry','gap_cbp_powermax', 
+            'gap_cbp_sg', 'gap_cbp_sp', 'gap_cbp_st', 'disparitas_rbp_nbc', 'vol_min1',
+            'district_name_kfold_target_enc']
+        data_res = pd.DataFrame()
+        for brand in data_model['brand_name'].unique():
+        	data_model_material = loop_apply_model_b2b(brand,data_model,model_elasticity,x)
+        	data_res.append(data_model_material)
+        return data_res
 
 
 def get_cost_data(tabel_cost):
