@@ -243,7 +243,6 @@ def b2b_new_cust():
 	print(b2b_req['district'])
 	print(b2b_req['material_type'])
 	print(b2b_req['packaging_mode'])
-	print(data_mapping)
 
 	
 	merge_mapping = pd.merge(
@@ -253,6 +252,8 @@ def b2b_new_cust():
 		right_on=['district','material_type','packaging_mode'],
 		how='left'
 	)
+	print(merge_mapping)
+
 	if len(merge_mapping.dropna())==0:
 		merge_mapping = pd.merge(
 			b2b_req,
@@ -283,6 +284,49 @@ def b2b_new_cust():
 					how='left'
 				)
 			if len(merge_mapping.dropna())==0:
+				return jsonify({
+					'status': 'please check district ref, material type, and packaging type input because data with its combination is not found'
+				}), 400
+			else:
+				pred = apply_model_cust_new_b2b(merge_mapping)
+				last_cbp_distrik = merge_mapping['cbp_sig'][0]
+				print(pred)
+				return jsonify({
+					'recommended cbp': pred[0],
+					'last cbp distrik': last_cbp_distrik,
+					'status': 'ok'
+				}), 200
+
+	if merge_mapping['nbc_brand'][0]=='UNKNOWN':
+		merge_mapping = pd.merge(
+			b2b_req,
+			data_mapping,
+			left_on=['district','material_type'],
+			right_on=['district','material_type'],
+			how='left'
+		)
+	if merge_mapping['nbc_brand'][0]=='UNKNOWN':
+		if district_ref is None:
+			return jsonify({
+				'status': 'please specify district ref input because data is not found on district'
+			}), 400
+		else:
+			merge_mapping = pd.merge(
+				b2b_req,
+				data_mapping,
+				left_on=['district_ref','material_type','packaging_mode'],
+				right_on=['district','material_type','packaging_mode'],
+				how='left'
+			)
+			if merge_mapping['nbc_brand'][0]=='UNKNOWN':
+				merge_mapping = pd.merge(
+					b2b_req,
+					data_mapping,
+					left_on=['district_ref','material_type'],
+					right_on=['district','material_type'],
+					how='left'
+				)
+			if merge_mapping['nbc_brand'][0]=='UNKNOWN':
 				return jsonify({
 					'status': 'please check district ref, material type, and packaging type input because data with its combination is not found'
 				}), 400
