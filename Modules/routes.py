@@ -19,6 +19,7 @@ def root():
 
 @app.route('/calculate_simulation', methods=['GET'])
 def predict():
+	print('start')
 	data_simulation = get_simulation_data(
 		engine = engine,tabel_simulation = 'simulation_test', 
 		simulation_status = "ready to run"
@@ -35,12 +36,14 @@ def predict():
 	data_prediction_retail = get_cost_data(tabel_cost='tabel_rbp_retail_prediction_data_result')
 	data_prediction_b2b = get_cost_data(tabel_cost='tabel_cbp_b2b_prediction_data_result')
 
-	data_volume_retail = get_cost_data(tabel_cost='tabel_prediksi_elasticity_retail')
+	data_volume_retail = get_cost_data(tabel_cost='datamodellingpriceelasticityretail')
 	data_volume_b2b = get_cost_data(tabel_cost='datamodellingpriceelasticityb2b')
 
 	print('progress_20%')
 
 	kolom = data_simulation.columns
+	print('data_simulation')
+	print(len(data_simulation))
 	# try:
 	# 	status_update = update_simulation_data(
 	# 		engine=engine,data_simulation=data_simulation, 
@@ -55,27 +58,51 @@ def predict():
 
 	data_simulation_b2b = data_simulation[data_simulation['model']=='B2B']
 	data_simulation_retail = data_simulation[data_simulation['model']=='Retail']
+	print('data_simulation_b2b')
+	print(len(data_simulation_b2b))
+
+	print('data_simulation_retail')
+	print(len(data_simulation_retail))
 	
 	## Pre Processing B2B
 	data_model_cbp_b2b = prep_cbp_modelling_b2b(data_simulation_b2b, data_prediction_b2b)
+	print('data_model_cbp_b2b')
+	print(len(data_model_cbp_b2b))
+	
 	data_model_volume_b2b = prep_vol_modelling_b2b(data_simulation_b2b, data_volume_b2b)
+	print('data_model_volume_b2b')
+	print(len(data_model_volume_b2b))
 
 	## Pre Processing Retail
 	data_model_cbp_retail = prep_cbp_modelling_retail(data_simulation_retail, data_prediction_retail)
+	print('data_model_cbp_retail')
+	print(len(data_model_cbp_retail))
+
 	data_model_volume_retail = prep_vol_modelling_retail(data_simulation_retail, data_volume_retail)
+	print('data_model_volume_retail')
+	print(len(data_model_volume_retail))
+
+
 	print('progress_45%')
 
 	## Apply model B2B
 	if len(data_model_cbp_b2b) != 0:
 		data_res_cbp_b2b = apply_model_b2b(data_model_cbp_b2b,'Price')
+	# print(len(data_res_cbp_b2b))
+
 	if len(data_model_volume_b2b) !=0:
 		data_res_volume_b2b = apply_model_b2b(data_model_volume_b2b,'Volume')
+	# print(len(data_res_volume_b2b))
 
 	## Apply model Retail
 	if len(data_model_cbp_retail) != 0:
 		data_res_cbp_retail = apply_model_retail(data_model_cbp_retail,'Price')
+	print(len(data_res_cbp_retail))
+
+
 	if len(data_model_volume_retail) !=0:
 		data_res_volume_retail = apply_model_retail(data_model_volume_retail,'Volume')
+	print(len(data_res_volume_retail))
 
 
 	# print(data_res_cbp_b2b.columns)
@@ -84,7 +111,7 @@ def predict():
 	# print(data_res_volume_retail.columns)
 	
 
-	data_res = pd.DataFrame(columns = kolom)
+	data_res = pd.DataFrame()
 	if len(data_model_cbp_b2b) !=0:
 		data_res = data_res.append(data_res_cbp_b2b[kolom], ignore_index=True)
 	if len(data_model_volume_b2b) !=0:
@@ -95,13 +122,19 @@ def predict():
 		data_res = data_res.append(data_res_volume_retail[kolom], ignore_index=True)
 	print('progress_75%')
 
+	print(len(data_res))
+
 	data_res_cost = calculate_cost(data_res, data_cost)
+	data_res_cost = data_res_cost[kolom]
+
+	print(len(data_res_cost))
+
 	print('progress_90%')
 
 	try:
 		status_update = update_simulation_data(
 			engine=engine,data_simulation=data_res_cost, 
-			status="finish", simulation_table='simulation_test'
+			status="ready to run", simulation_table='simulation_test'
 		)
 	except Exception as e:
 		return jsonify({

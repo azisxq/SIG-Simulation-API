@@ -14,3 +14,15 @@ model_elasticity_retail = {
     "ANDALAS":"GBoost_andalas_elasticity_brand_sig_model_price.pkl",
     "MASONRY":"RForest_masonry_elasticity_brand_sig_model_price.pkl"
 }
+
+model_elasticity_b2b = {
+    "DURAMAX" : "elasticity_brand_sig_duramax_model_b2b_random_forest.pkl",
+    "OPC Premium" : "elasticity_brand_sig_opc_premium_model_b2b_random_forest.pkl",
+    "OPC Reguler":"elasticity_brand_sig_opc_reguler_model_b2b_random_forest.pkl",
+    "OWC":"elasticity_brand_sig_owc_model_b2b_random_forest.pkl",
+    "PCC":"elasticity_brand_sig_pcc_model_b2b_random_forest.pkl",
+    "PCC Premium":"elasticity_brand_sig_pcc_premium_model_b2b_random_forest.pkl",
+    "SBC":"elasticity_brand_sig_sbc_model_b2b_random_forest.pkl",
+    "Type II":"elasticity_brand_sig_type_ii_model_b2b_random_forest.pkl",
+    "Type V":"elasticity_brand_sig_type_v_model_b2b_random_forest.pkl"
+}
