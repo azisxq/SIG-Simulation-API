@@ -134,7 +134,7 @@ def predict():
 	try:
 		status_update = update_simulation_data(
 			engine=engine,data_simulation=data_res_cost, 
-			status="ready to run", simulation_table='simulation_test'
+			status="finish", simulation_table='simulation_test'
 		)
 	except Exception as e:
 		return jsonify({
