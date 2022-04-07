@@ -6,13 +6,13 @@ b2b_new_cust = {
 }
 
 model_elasticity_retail = {
-    "ST" : "STDTree-Copy1.pkl",
-    "SG" : "SGDTree-Copy1.pkl",
-    "DYNAMIX":"DYNAMIXDTree-Copy1.pkl",
-    "POWERMAX":"POWERMAXDTree-Copy1.pkl",
-    "SP":"SPDTree-Copy1.pkl",
-    "ANDALAS":"ANDALASDTree-Copy1.pkl",
-    "MASONRY":"MASONRYDTree-Copy1.pkl"
+    "ST" : "LR_elasticity_brand_sig_st_model_retail.pkl",
+    "SG" : "LR_elasticity_brand_sig_sg_model_retail.pkl",
+    "DYNAMIX":"LR_elasticity_brand_sig_dynamix_model_retail.pkl",
+    "POWERMAX":"LR_elasticity_brand_sig_powermax_model_retail.pkl",
+    "SP":"LR_elasticity_brand_sig_sp_model_retail.pkl",
+    "ANDALAS":"LR_elasticity_brand_sig_andalas_model_retail.pkl",
+    "MASONRY":"LR_elasticity_brand_sig_masonry_model_retail.pkl"
 }
 
 model_elasticity_b2b = {

@@ -21,7 +21,7 @@ def root():
 def predict():
 	print('start')
 	data_simulation = get_simulation_data(
-		engine = engine,tabel_simulation = 'simulation_test', 
+		engine = engine,tabel_simulation = 'simulation_test_2', 
 		simulation_status = "ready to run"
 	)
 	if len(data_simulation)==0:
@@ -123,7 +123,7 @@ def predict():
 		data_res = data_res.append(data_res_volume_retail[kolom], ignore_index=True)
 	print('progress_75%')
 
-	print(len(data_res))
+	print(data_res[['prediction_volume','prediction_price']])
 
 	data_res_cost = calculate_cost(data_res, data_cost)
 	data_res_cost = data_res_cost[kolom]
@@ -135,7 +135,7 @@ def predict():
 	try:
 		status_update = update_simulation_data(
 			engine=engine,data_simulation=data_res_cost, 
-			status="finish", simulation_table='simulation_test'
+			status="finish", simulation_table='simulation_test_2'
 		)
 	except Exception as e:
 		return jsonify({

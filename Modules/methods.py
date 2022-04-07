@@ -174,6 +174,7 @@ def prep_vol_modelling_b2b(data_simulation, data_predict):
     		data_mat = data_model[data_model['material_type']==material]
     		material_type = material.lower().replace(' ','_')
     		data_mat['gap_cbp_{0!s}'.format(material_type)] = list(map(lambda x,y:calculate_gap_cbp(x,y),data_mat['prediction_price'],data_mat['last_price']))
+    		print(data_mat['gap_cbp_{0!s}'.format(material_type)])
     		data_res_model = data_res_model.append(data_mat)
     	return data_res_model
     else:
@@ -201,8 +202,12 @@ def prep_vol_modelling_retail(data_simulation, data_predict):
     if len(data_model)>0:
     	for material in data_model['brand_name'].unique():
     		data_mat = data_model[data_model['brand_name']==material]
+    		print(data_mat['prediction_price'])
     		material_type = material.lower().replace(' ','_')
-    		data_mat['gap_cbp_{0!s}'.format(material_type)] = list(map(lambda x,y:calculate_gap_cbp(x,y),data_mat['prediction_price'],data_mat['last_price']))
+    		print("gap rbp")
+    		print(data_mat['gap_rbp_{0!s}_lm'.format(material_type)])
+    		data_mat['gap_rbp_{0!s}_lm'.format(material_type)] = list(map(lambda x,y:calculate_gap_cbp(x,y),data_mat['prediction_price'],data_mat['last_price']))
+    		print(data_mat['gap_rbp_{0!s}_lm'.format(material_type)])
     		data_res_model = data_res_model.append(data_mat)
     	print('data Retail model volume')
     	print(len(data_res_model))
@@ -216,11 +221,10 @@ def loop_apply_model_retail(brand_name,data_model,var_x,model_elasticity=model_e
 	algorithm = model_elasticity[brand_name]
 	file = open(F"./Modules/data/{algorithm}",'rb')
 	volume_model = pickle.load(file)
-	pred_vol = volume_model.predict(data_model_brand[var_x])
-	max_a = data_model_brand['volume_lm'].max()
-	min_a = data_model_brand['volume_lm'].min()
-	mean_a = data_model_brand['volume_lm'].mean()
-	data_model_brand['prediction_volume'] = data_model_brand['volume_lm']+pred_vol
+	var_pred = ['gap_rbp_{0!s}_lm'.format(brand_name.lower())]
+	pred_vol = volume_model.predict(data_model_brand[var_pred])
+	flat_list = [item for sublist in pred_vol for item in sublist]
+	data_model_brand['prediction_volume'] = data_model_brand['volume_lm']+flat_list
 	# data_model_brand['prediction_volume'] = list(map(lambda x,y : x+((max_a-y)/(max_a-min_a)*mean_a),data_model_brand['volume_lm'],pred_vol))
 	data_model_brand['prediction_volume'] = list(map(lambda x : 0 if x < 0 else x,data_model_brand['prediction_volume']))
 	return data_model_brand
@@ -270,28 +274,40 @@ def apply_model_b2b(data_model, flag):
     	return data_res
 
 
+def apply_rbp(price_lm,volume1,volume2):
+    price = price_lm + (-0.371789*(volume2-volume1))
+    return price
+
+
 def apply_model_retail(data_model, flag):
     if flag == 'Price':
-        file = open("./Modules/data/model_prediction_retail_rbp.pkl",'rb')
-        price_model = pickle.load(file)
-        file.close()
-        var_x = [
-			'is_promo_lm',
-			'volume_lm',
-			'ms_lm',
-			'ms_nbc_lm',
-			'rbp_nbc_lm',
-			'is_seasonality',
-			'stok_level_lm',
-			'growth_rbp_3month',
-			'growth_volume_1month',
-			'rbp_lm',
-			'kemasan_kfold_target_enc',
-			'brand_name_kfold_target_enc',
-			'province_name_kfold_target_enc'
-		]
-        data_model['prediction_price'] = price_model.predict(data_model[var_x])
-        return data_model
+    	data_model['prediction_price'] = list(map(lambda x,y,z:apply_rbp(x,y,z),data_model['rbp_lm'],data_model['volume_lm'],data_model['prediction_volume']))
+    	return data_model
+  #       file = open("./Modules/data/model_prediction_retail_rbp.pkl",'rb')
+  #       price_model = pickle.load(file)
+  #       file.close()
+  #       # data_model['volume_lm'] = data_model['prediction_volume']
+  #       var_x = [
+		# 	'is_promo_lm',
+		# 	'volume_lm',
+		# 	'ms_lm',
+		# 	'ms_nbc_lm',
+		# 	'rbp_nbc_lm',
+		# 	'is_seasonality',
+		# 	'stok_level_lm',
+		# 	'growth_rbp_3month',
+		# 	'growth_volume_1month',
+		# 	'rbp_lm',
+		# 	'kemasan_kfold_target_enc',
+		# 	'brand_name_kfold_target_enc',
+		# 	'province_name_kfold_target_enc'
+		# ]
+  #       print("before")
+  #       print(data_model['prediction_price'])
+  #       data_model['prediction_price'] = price_model.predict(data_model[var_x])
+  #       print("after")
+  #       print(data_model['prediction_price'])
+        # return data_model
     elif flag == 'Volume':
     	data_model['volume_lm'] = data_model['volume_lm_x']
     	var_x = [
@@ -393,17 +409,17 @@ def calculate_cost(data_simulation, data_cost):
         ]
     )
 
-    data_simulation_cost_b2b['oa'] = data_simulation_cost_b2b['oa_y']
-    data_simulation_cost_b2b['var prod'] = data_simulation_cost_b2b['var prod_y']
-    data_simulation_cost_b2b['trn'] = data_simulation_cost_b2b['trn_y']
-    data_simulation_cost_b2b['kmsn'] = data_simulation_cost_b2b['kmsn_y']
-    data_simulation_cost_b2b['var packer'] = data_simulation_cost_b2b['var packer_y']
-    data_simulation_cost_b2b['fix packer'] = data_simulation_cost_b2b['fix packer_y']
-    data_simulation_cost_b2b['fix prod'] = data_simulation_cost_b2b['fix prod_y']
-    data_simulation_cost_b2b['adum'] = data_simulation_cost_b2b['adum_y']
-    data_simulation_cost_b2b['sales'] = data_simulation_cost_b2b['sales_y']
-    data_simulation_cost_b2b['company code/opco'] = data_simulation_cost_b2b['company code/opco_y']
-    data_simulation_cost_b2b['segment'] = data_simulation_cost_b2b['segment_y']
+    data_simulation_cost_b2b['oa'] = data_simulation_cost_b2b['oa_x']
+    data_simulation_cost_b2b['var prod'] = data_simulation_cost_b2b['var prod_x']
+    data_simulation_cost_b2b['trn'] = data_simulation_cost_b2b['trn_x']
+    data_simulation_cost_b2b['kmsn'] = data_simulation_cost_b2b['kmsn_x']
+    data_simulation_cost_b2b['var packer'] = data_simulation_cost_b2b['var packer_x']
+    data_simulation_cost_b2b['fix packer'] = data_simulation_cost_b2b['fix packer_x']
+    data_simulation_cost_b2b['fix prod'] = data_simulation_cost_b2b['fix prod_x']
+    data_simulation_cost_b2b['adum'] = data_simulation_cost_b2b['adum_x']
+    data_simulation_cost_b2b['sales'] = data_simulation_cost_b2b['sales_x']
+    data_simulation_cost_b2b['company code/opco'] = data_simulation_cost_b2b['company code/opco_x']
+    data_simulation_cost_b2b['segment'] = data_simulation_cost_b2b['segment_x']
 
     data_simulation_cost_b2b['gross margin distributor'] = data_simulation_cost_b2b['gpm']/100*data_simulation_cost_b2b['prediction_price']
     data_simulation_cost_b2b['htd_inc_tax_ton'] = data_simulation_cost_b2b['prediction_price']+data_simulation_cost_b2b['gross margin distributor']
@@ -450,6 +466,8 @@ def calculate_cost(data_simulation, data_cost):
 
 
     data_simulation_retail = data_simulation[data_simulation['model']=='Retail']
+
+    print(data_simulation_retail[['prediction_price','prediction_volume']])
     data_simulation_cost_retail = pd.merge(
         data_simulation_retail,
         data_cost, 
@@ -460,20 +478,20 @@ def calculate_cost(data_simulation, data_cost):
         ]
     )
 
-    data_simulation_cost_retail['oa'] = data_simulation_cost_retail['oa_y']
-    data_simulation_cost_retail['var prod'] = data_simulation_cost_retail['var prod_y']
-    data_simulation_cost_retail['trn'] = data_simulation_cost_retail['trn_y']
-    data_simulation_cost_retail['kmsn'] = data_simulation_cost_retail['kmsn_y']
-    data_simulation_cost_retail['var packer'] = data_simulation_cost_retail['var packer_y']
-    data_simulation_cost_retail['fix packer'] = data_simulation_cost_retail['fix packer_y']
-    data_simulation_cost_retail['fix prod'] = data_simulation_cost_retail['fix prod_y']
-    data_simulation_cost_retail['adum'] = data_simulation_cost_retail['adum_y']
-    data_simulation_cost_retail['sales'] = data_simulation_cost_retail['sales_y']
-    data_simulation_cost_retail['company code/opco'] = data_simulation_cost_retail['company code/opco_y']
-    data_simulation_cost_retail['ship to name'] = data_simulation_cost_retail['ship to name_y']
-    data_simulation_cost_retail['ship to code'] = data_simulation_cost_retail['ship to code_y']
-    data_simulation_cost_retail['material type'] = data_simulation_cost_retail['material type_y']
-    data_simulation_cost_retail['segment'] = data_simulation_cost_retail['segment_y']
+    data_simulation_cost_retail['oa'] = data_simulation_cost_retail['oa_x']
+    data_simulation_cost_retail['var prod'] = data_simulation_cost_retail['var prod_x']
+    data_simulation_cost_retail['trn'] = data_simulation_cost_retail['trn_x']
+    data_simulation_cost_retail['kmsn'] = data_simulation_cost_retail['kmsn_x']
+    data_simulation_cost_retail['var packer'] = data_simulation_cost_retail['var packer_x']
+    data_simulation_cost_retail['fix packer'] = data_simulation_cost_retail['fix packer_x']
+    data_simulation_cost_retail['fix prod'] = data_simulation_cost_retail['fix prod_x']
+    data_simulation_cost_retail['adum'] = data_simulation_cost_retail['adum_x']
+    data_simulation_cost_retail['sales'] = data_simulation_cost_retail['sales_x']
+    data_simulation_cost_retail['company code/opco'] = data_simulation_cost_retail['company code/opco_x']
+    data_simulation_cost_retail['ship to name'] = data_simulation_cost_retail['ship to name_x']
+    data_simulation_cost_retail['ship to code'] = data_simulation_cost_retail['ship to code_x']
+    data_simulation_cost_retail['material type'] = data_simulation_cost_retail['material type_x']
+    data_simulation_cost_retail['segment'] = data_simulation_cost_retail['segment_x']
     data_simulation_cost_retail['gross margin distributor zak'] = list(map(lambda x,y: x*y/100,data_simulation_cost_retail['prediction_price'],data_simulation_cost_retail['gpm']))
     data_simulation_cost_retail['htd_inc_tax'] = list(map(lambda x,y: int(x) if math.isnan(y) else int(x)+int(y),data_simulation_cost_retail['prediction_price'],data_simulation_cost_retail['gross margin distributor zak']))
     data_simulation_cost_retail['kemasan_'] = list(map(lambda x: int(x.split(' ')[0]),data_simulation_cost_retail['packaging weight']))
@@ -522,5 +540,6 @@ def get_mapping_district_var(engine,tabel_mapping_var='mapping_district_var_cust
     """.format(tabel_mapping_var)
 	data_mapping_district_var = pd.read_sql_query(statement, engine)
 	return data_mapping_district_var
+
 
 
