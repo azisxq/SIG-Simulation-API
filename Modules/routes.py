@@ -42,6 +42,7 @@ def predict():
 	print('progress_20%')
 
 	kolom = data_simulation.columns
+	print(kolom)
 	print('data_simulation')
 	print(len(data_simulation))
 	# try:
@@ -97,12 +98,12 @@ def predict():
 	## Apply model Retail
 	if len(data_model_cbp_retail) != 0:
 		data_res_cbp_retail = apply_model_retail(data_model_cbp_retail,'Price')
-	print(len(data_res_cbp_retail))
+	# print(len(data_res_cbp_retail))
 
 
 	if len(data_model_volume_retail) !=0:
 		data_res_volume_retail = apply_model_retail(data_model_volume_retail,'Volume')
-	print(len(data_res_volume_retail))
+	# print(len(data_res_volume_retail))
 
 
 	# print(data_res_cbp_b2b.columns)
