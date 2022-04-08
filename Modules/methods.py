@@ -218,16 +218,19 @@ def prep_vol_modelling_retail(data_simulation, data_predict):
 
 def loop_apply_model_retail(brand_name,data_model,var_x,model_elasticity=model_elasticity_retail):
 	data_model_brand = data_model[data_model['brand_name']==brand_name]
-	algorithm = model_elasticity[brand_name]
-	file = open(F"./Modules/data/{algorithm}",'rb')
-	volume_model = pickle.load(file)
-	var_pred = ['gap_rbp_{0!s}_lm'.format(brand_name.lower())]
-	pred_vol = volume_model.predict(data_model_brand[var_pred])
-	flat_list = [item for sublist in pred_vol for item in sublist]
-	data_model_brand['prediction_volume'] = data_model_brand['volume_lm']+flat_list
-	# data_model_brand['prediction_volume'] = list(map(lambda x,y : x+((max_a-y)/(max_a-min_a)*mean_a),data_model_brand['volume_lm'],pred_vol))
-	data_model_brand['prediction_volume'] = list(map(lambda x : 0 if x < 0 else x,data_model_brand['prediction_volume']))
-	return data_model_brand
+	if len(data_model_brand)>0:
+		algorithm = model_elasticity[brand_name]
+		file = open(F"./Modules/data/{algorithm}",'rb')
+		volume_model = pickle.load(file)
+		var_pred = ['gap_rbp_{0!s}_lm'.format(brand_name.lower())]
+		pred_vol = volume_model.predict(data_model_brand[var_pred])
+		flat_list = [item for sublist in pred_vol for item in sublist]
+		data_model_brand['prediction_volume'] = data_model_brand['volume_lm']+flat_list
+		# data_model_brand['prediction_volume'] = list(map(lambda x,y : x+((max_a-y)/(max_a-min_a)*mean_a),data_model_brand['volume_lm'],pred_vol))
+		data_model_brand['prediction_volume'] = list(map(lambda x : 0 if x < 0 else x,data_model_brand['prediction_volume']))
+		return data_model_brand
+	else:
+		pass
 
 
 def loop_apply_model_b2b(material,data_model,var_x,model_elasticity=model_elasticity_b2b):
@@ -392,7 +395,7 @@ def ppn(district, harga_tebus):
         return harga_tebus*0.1
 
 
-def calculate_cost(data_simulation, data_cost):
+def calculate_cost(data_simulation, data_cost, retail_distrik_, retail_province_):
     data_simulation_b2b = data_simulation[data_simulation['model']=='B2B']
     data_simulation_cost_b2b = pd.merge(
         data_simulation_b2b,
@@ -422,7 +425,7 @@ def calculate_cost(data_simulation, data_cost):
     data_simulation_cost_b2b['segment'] = data_simulation_cost_b2b['segment_x']
 
     data_simulation_cost_b2b['gross margin distributor'] = data_simulation_cost_b2b['gpm']/100*data_simulation_cost_b2b['prediction_price']
-    data_simulation_cost_b2b['htd_inc_tax_ton'] = data_simulation_cost_b2b['prediction_price']+data_simulation_cost_b2b['gross margin distributor']
+    data_simulation_cost_b2b['htd_inc_tax_ton'] = data_simulation_cost_b2b['prediction_price']-data_simulation_cost_b2b['gross margin distributor']
     data_simulation_cost_b2b['revenue'] = data_simulation_cost_b2b['htd_inc_tax_ton']*data_simulation_cost_b2b['prediction_volume']
     data_simulation_cost_b2b['penj net'] = data_simulation_cost_b2b['htd_inc_tax_ton']-data_simulation_cost_b2b['oa']
     data_simulation_cost_b2b['cont margin'] = data_simulation_cost_b2b['penj net']-(data_simulation_cost_b2b['var prod']+data_simulation_cost_b2b['trn']+data_simulation_cost_b2b['kmsn']+data_simulation_cost_b2b['var packer'])
@@ -459,7 +462,7 @@ def calculate_cost(data_simulation, data_cost):
     'adum_x','sales_x','segment_x',
     'company code/opco_x','ship to code_x',
     'ship to name_x','material type_x', 'htd_inc_tax_ton',
-    'htd_inc_tax','kemasan_','weight_kemasan'
+    'htd_inc_tax','kemasan_','weight_kemasan','predict_med_new_y','predict_med_new'
     ]
     data_simulation_cost_b2b_column = set(data_simulation_cost_b2b.columns)-set(drop_column)
     data_simulation_cost_b2b = data_simulation_cost_b2b[data_simulation_cost_b2b_column]
@@ -493,10 +496,19 @@ def calculate_cost(data_simulation, data_cost):
     data_simulation_cost_retail['material type'] = data_simulation_cost_retail['material type_x']
     data_simulation_cost_retail['segment'] = data_simulation_cost_retail['segment_x']
     data_simulation_cost_retail['gross margin distributor zak'] = list(map(lambda x,y: x*y/100,data_simulation_cost_retail['prediction_price'],data_simulation_cost_retail['gpm']))
-    data_simulation_cost_retail['htd_inc_tax'] = list(map(lambda x,y: int(x) if math.isnan(y) else int(x)+int(y),data_simulation_cost_retail['prediction_price'],data_simulation_cost_retail['gross margin distributor zak']))
+    data_simulation_cost_retail['htd_inc_tax'] = list(map(lambda x,y: int(x) if math.isnan(y) else int(x)-int(y),data_simulation_cost_retail['prediction_price'],data_simulation_cost_retail['gross margin distributor zak']))
     data_simulation_cost_retail['kemasan_'] = list(map(lambda x: int(x.split(' ')[0]),data_simulation_cost_retail['packaging weight']))
     data_simulation_cost_retail['weight_kemasan'] = 1000/data_simulation_cost_retail['kemasan_']
     data_simulation_cost_retail['htd_inc_tax_ton'] = data_simulation_cost_retail['htd_inc_tax']*data_simulation_cost_retail['weight_kemasan']
+    
+    data_simulation_cost_retail['revenue'] = data_simulation_cost_retail['htd_inc_tax_ton']*data_simulation_cost_retail['prediction_volume']
+    data_simulation_cost_retail['penj net'] = data_simulation_cost_retail['htd_inc_tax_ton']-data_simulation_cost_retail['oa']
+    data_simulation_cost_retail['cont margin'] = data_simulation_cost_retail['penj net']-(data_simulation_cost_retail['var prod']+data_simulation_cost_retail['trn']+data_simulation_cost_retail['kmsn']+data_simulation_cost_retail['var packer'])
+    data_simulation_cost_retail['gross margin'] = data_simulation_cost_retail['cont margin']-(data_simulation_cost_retail['fix packer']+data_simulation_cost_retail['fix prod'])
+    data_simulation_cost_retail['net margin'] = data_simulation_cost_retail['gross margin']-data_simulation_cost_retail['adum']-data_simulation_cost_retail['sales']
+    data_simulation_cost_retail['net margin grp'] = data_simulation_cost_retail['net margin']+data_simulation_cost_retail['net margin ics']
+    data_simulation_cost_retail['profit'] = data_simulation_cost_retail['net margin grp']*data_simulation_cost_retail['prediction_volume']
+
     data_simulation_cost_retail['gross margin distributor zak'] = (data_simulation_cost_retail['prediction_price']*data_simulation_cost_retail['gpm']/100)
     data_simulation_cost_retail['gross margin distributor'] = data_simulation_cost_retail['gross margin distributor zak']*data_simulation_cost_retail['weight_kemasan']
     data_simulation_cost_retail['margin distributor zak'] = data_simulation_cost_retail['gross margin distributor zak']-data_simulation_cost_retail['oa ke customer']-data_simulation_cost_retail['opt']-data_simulation_cost_retail['freight n container']-data_simulation_cost_retail['freight']-data_simulation_cost_retail['opp']-data_simulation_cost_retail['oa to pelabuhan']-data_simulation_cost_retail['biaya social']-data_simulation_cost_retail['com']
@@ -510,10 +522,22 @@ def calculate_cost(data_simulation, data_cost):
     data_simulation_cost_retail['ppn']=list(map(lambda x,y: ppn(x,y),data_simulation_cost_retail['district desc smi'], data_simulation_cost_retail['harga tebus excl tax']))
     data_simulation_cost_retail['opco md excl tax'] = list(map(lambda a,b,c,d,e,f,g,h,i,j,k:OpcoMDExTax(a,b,c,d,e,f,g,h,i,j,k),data_simulation_cost_retail['entity'],data_simulation_cost_retail['harga tebus excl tax'],data_simulation_cost_retail['var prod'],data_simulation_cost_retail['var packer'],data_simulation_cost_retail['kmsn'],data_simulation_cost_retail['fix prod'],data_simulation_cost_retail['fix packer'],data_simulation_cost_retail['trn'],data_simulation_cost_retail['oa'],data_simulation_cost_retail['material type'],data_simulation_cost_retail['packaging mode']))
     data_simulation_cost_retail['opco md netto excl tax'] = list(map(lambda a,b,c,d,e:OpcoMDNettoExTax(a,b,c,d,e),data_simulation_cost_retail['entity'],data_simulation_cost_retail['opco md excl tax'],data_simulation_cost_retail['oa'],data_simulation_cost_retail['com'],data_simulation_cost_retail['biaya lain']))
-    data_simulation_cost_retail_column = set(data_simulation_cost_retail.columns)-set(drop_column)
+    df_predict_cost_filter_opt_first_join_distrik = pd.merge(data_simulation_cost_retail,retail_distrik_,on=['period','province','district_ret'])
+    df_predict_cost_filter_opt_first_join_province = pd.merge(df_predict_cost_filter_opt_first_join_distrik,retail_province_,on=['period','province'])
+    df_predict_cost_filter_opt_first_join_province['predict_med_new_y']=list(map(lambda x: 0 if x<=0 else x,df_predict_cost_filter_opt_first_join_province['predict_med_new_y']))
+    df_predict_cost_filter_opt_first_join_province['predict_med_new']=list(map(lambda x: 0 if x<=0 else x,df_predict_cost_filter_opt_first_join_province['predict_med_new']))
+    df_predict_cost_filter_opt_first_join_province['market_share'] = list(map(lambda v,x,y,z:0 if x<=0 else (x/y*100 if v!='UNKNOWN' else x/z*100),df_predict_cost_filter_opt_first_join_province['district_ret'],df_predict_cost_filter_opt_first_join_province['prediction_volume'],df_predict_cost_filter_opt_first_join_province['predict_med_new_y'],df_predict_cost_filter_opt_first_join_province['predict_med_new']))
+    # data_simulation_cost_retail['market_share'] = df_predict_cost_filter_opt_first_join_province['market_share']
+    data_simulation_cost_b2b['market_share'] = 0
+
+    data_simulation_cost_retail_column = set(df_predict_cost_filter_opt_first_join_province.columns)-set(drop_column)
     data_simulation_cost_retail = data_simulation_cost_retail[data_simulation_cost_retail_column]
+    
+
     data_simulation_cost=data_simulation_cost_retail.append(data_simulation_cost_b2b,ignore_index=True)
     data_simulation_cost = data_simulation_cost.groupby(['period', 'year', 'month', 'province', 'material type','packaging mode', 'packaging weight', 'brand_name','entity', 'region smi', 'district desc smi']).first().reset_index()
+
+
 
 
     return data_simulation_cost

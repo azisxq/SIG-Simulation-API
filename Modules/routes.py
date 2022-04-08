@@ -21,7 +21,7 @@ def root():
 def predict():
 	print('start')
 	data_simulation = get_simulation_data(
-		engine = engine,tabel_simulation = 'simulation_test_2', 
+		engine = engine,tabel_simulation = 'simulation_test', 
 		simulation_status = "ready to run"
 	)
 	if len(data_simulation)==0:
@@ -38,6 +38,13 @@ def predict():
 
 	data_volume_retail = get_cost_data(tabel_cost='datamodellingpriceelasticityretail')
 	data_volume_b2b = get_cost_data(tabel_cost='datamodellingpriceelasticityb2b')
+
+	retail_distrik = get_cost_data(tabel_cost='tabel_prediction_retail_district_test_weighted')
+	retail_distrik_ = retail_distrik[['period','province','district_ret','predict_med_new']]
+
+	retail_province = get_cost_data(tabel_cost='tabel_prediction_retail_province_test_weighted')
+	retail_province_ = retail_province[['period','province','predict_med_new']]
+
 
 	print('progress_20%')
 
@@ -125,7 +132,7 @@ def predict():
 
 	print(data_res[['prediction_volume','prediction_price']])
 
-	data_res_cost = calculate_cost(data_res, data_cost)
+	data_res_cost = calculate_cost(data_res, data_cost, retail_distrik_, retail_province_)
 	data_res_cost = data_res_cost[kolom]
 
 	print(len(data_res_cost))
@@ -135,7 +142,7 @@ def predict():
 	try:
 		status_update = update_simulation_data(
 			engine=engine,data_simulation=data_res_cost, 
-			status="finish", simulation_table='simulation_test_2'
+			status="finish", simulation_table='simulation_test'
 		)
 	except Exception as e:
 		return jsonify({
