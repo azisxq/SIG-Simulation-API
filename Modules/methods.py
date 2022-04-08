@@ -67,6 +67,7 @@ def prep_cbp_modelling_retail(data_simulation, data_predict):
         left_on=['period', 'year','province','brand_name','packaging weight', 'district desc smi'],
         right_on=['period', 'year', 'province_name','brand_name','kemasan', 'district_name']
     )
+    print(data_model.columns)
     data_model = data_model.groupby(['period', 'year', 'province_name','brand_name','kemasan', 'district_name']).first().reset_index()
     print('data retail model price')
     print(len(data_model))
@@ -78,7 +79,8 @@ def prep_cbp_modelling_retail(data_simulation, data_predict):
     data_model['volume_rkap'] = data_model['volume_rkap_x']
     data_model['rbp_rkap'] = data_model['rbp_rkap_x']
     data_model['revenue_rkap'] = data_model['revenue_rkap_x']
-    data_model=data_model[['period', 'province', 'ship to code', 'ship to name',
+    data_model['district_ret'] = data_model['district_ret_x']
+    data_model=data_model[['period', 'province', 'ship to code', 'ship to name', 'district_ret',
 		'material type', 'packaging mode', 'year','month','packaging weight', 'entity',
 		'region smi', 'district desc smi', 'company code/opco', 'brand_name',
 		'productive plant', 'shipping station l1 desc', 'incoterm', 'oa',
@@ -129,7 +131,7 @@ def prep_cbp_modelling_b2b(data_simulation, data_predict):
 
     data_model=data_model[['period', 'year','month', 'province', 'ship to code', 'ship to name',
        'material type', 'packaging mode', 'packaging weight', 'entity', 'brand_name',
-       'region smi', 'district desc smi', 'gpm', 'company code/opco',
+       'region smi', 'district desc smi', 'gpm', 'company code/opco', 'district_ret',
        'productive plant', 'shipping station l1 desc', 'incoterm', 'oa',
        'var prod', 'trn', 'kmsn', 'var packer', 'fix packer', 'fix prod',
        'adum', 'sales', 'com', 'biaya lain', 'oa ke customer', 'opt',
@@ -196,6 +198,8 @@ def prep_vol_modelling_retail(data_simulation, data_predict):
         right_on=['period', 'province_name','brand_name','kemasan', 'district_name'],
     )
     print('data retail model volume')
+    for i in data_model.columns:
+    	print(i)
     print(len(data_model))
     print(data_model.columns)
     data_res_model = pd.DataFrame()
@@ -313,6 +317,7 @@ def apply_model_retail(data_model, flag):
         # return data_model
     elif flag == 'Volume':
     	data_model['volume_lm'] = data_model['volume_lm_x']
+    	data_model['district_ret'] = data_model['district_ret_x']
     	var_x = [
     	'rbp_lm', 'volume_lm', 'rbp_nbc_lm', 'disparitas_rbp_nbc_lm', 'ms_lm',
     	'ms_nbc_lm', 'gap_rbp_andalas_lm', 'gap_rbp_dynamix_lm',
@@ -324,6 +329,7 @@ def apply_model_retail(data_model, flag):
     	for brand in data_model['brand_name'].unique():
     		data_model_brand = loop_apply_model_retail(brand,data_model,var_x)
     		data_res = data_res.append(data_model_brand)
+    	print(data_res.columns)
     	return data_res
 
 
@@ -524,14 +530,21 @@ def calculate_cost(data_simulation, data_cost, retail_distrik_, retail_province_
     data_simulation_cost_retail['opco md netto excl tax'] = list(map(lambda a,b,c,d,e:OpcoMDNettoExTax(a,b,c,d,e),data_simulation_cost_retail['entity'],data_simulation_cost_retail['opco md excl tax'],data_simulation_cost_retail['oa'],data_simulation_cost_retail['com'],data_simulation_cost_retail['biaya lain']))
     df_predict_cost_filter_opt_first_join_distrik = pd.merge(data_simulation_cost_retail,retail_distrik_,on=['period','province','district_ret'])
     df_predict_cost_filter_opt_first_join_province = pd.merge(df_predict_cost_filter_opt_first_join_distrik,retail_province_,on=['period','province'])
+    print('lalalayeyeye')
+    for i in df_predict_cost_filter_opt_first_join_distrik.columns:
+    	print(i)
+    print('lalala')
+    print('------------------')
+    for i in df_predict_cost_filter_opt_first_join_province.columns:
+    	print(i)
     df_predict_cost_filter_opt_first_join_province['predict_med_new_y']=list(map(lambda x: 0 if x<=0 else x,df_predict_cost_filter_opt_first_join_province['predict_med_new_y']))
-    df_predict_cost_filter_opt_first_join_province['predict_med_new']=list(map(lambda x: 0 if x<=0 else x,df_predict_cost_filter_opt_first_join_province['predict_med_new']))
+    df_predict_cost_filter_opt_first_join_province['predict_med_new']=list(map(lambda x: 0 if x<=0 else x,df_predict_cost_filter_opt_first_join_province['predict_med_new_x']))
     df_predict_cost_filter_opt_first_join_province['market_share'] = list(map(lambda v,x,y,z:0 if x<=0 else (x/y*100 if v!='UNKNOWN' else x/z*100),df_predict_cost_filter_opt_first_join_province['district_ret'],df_predict_cost_filter_opt_first_join_province['prediction_volume'],df_predict_cost_filter_opt_first_join_province['predict_med_new_y'],df_predict_cost_filter_opt_first_join_province['predict_med_new']))
     # data_simulation_cost_retail['market_share'] = df_predict_cost_filter_opt_first_join_province['market_share']
     data_simulation_cost_b2b['market_share'] = 0
 
     data_simulation_cost_retail_column = set(df_predict_cost_filter_opt_first_join_province.columns)-set(drop_column)
-    data_simulation_cost_retail = data_simulation_cost_retail[data_simulation_cost_retail_column]
+    data_simulation_cost_retail = df_predict_cost_filter_opt_first_join_province[data_simulation_cost_retail_column]
     
 
     data_simulation_cost=data_simulation_cost_retail.append(data_simulation_cost_b2b,ignore_index=True)
