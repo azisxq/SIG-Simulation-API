@@ -21,7 +21,7 @@ def root():
 def predict():
 	print('start')
 	data_simulation = get_simulation_data(
-		engine = engine,tabel_simulation = 'simulation_test_2', 
+		engine = engine,tabel_simulation = 'simulation_test', 
 		simulation_status = "ready to run"
 	)
 	if len(data_simulation)==0:
@@ -143,7 +143,7 @@ def predict():
 	try:
 		status_update = update_simulation_data(
 			engine=engine,data_simulation=data_res_cost, 
-			status="finish", simulation_table='simulation_test_2'
+			status="finish", simulation_table='simulation_test'
 		)
 	except Exception as e:
 		return jsonify({
