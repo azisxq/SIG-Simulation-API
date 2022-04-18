@@ -21,7 +21,7 @@ def root():
 def predict():
 	print('start')
 	data_simulation = get_simulation_data(
-		engine = engine,tabel_simulation = 'simulation_test', 
+		engine = engine,tabel_simulation = 'simulation_test_2', 
 		simulation_status = "ready to run"
 	)
 	if len(data_simulation)==0:
@@ -85,6 +85,7 @@ def predict():
 	data_model_cbp_retail = prep_cbp_modelling_retail(data_simulation_retail, data_prediction_retail)
 	print('data_model_cbp_retail')
 	print(len(data_model_cbp_retail))
+	print(data_model_cbp_retail.columns)
 
 	data_model_volume_retail = prep_vol_modelling_retail(data_simulation_retail, data_volume_retail)
 	print('data_model_volume_retail')
@@ -142,7 +143,7 @@ def predict():
 	try:
 		status_update = update_simulation_data(
 			engine=engine,data_simulation=data_res_cost, 
-			status="finish", simulation_table='simulation_test'
+			status="finish", simulation_table='simulation_test_2'
 		)
 	except Exception as e:
 		return jsonify({
