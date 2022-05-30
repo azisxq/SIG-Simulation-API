@@ -6,23 +6,23 @@ b2b_new_cust = {
 }
 
 model_elasticity_retail = {
-    "ST" : "model_gbt_nasional_st.pkl",
-    "SG" : "model_gbt_nasional_sg.pkl",
-    "DYNAMIX":"model_gbt_nasional_dynamix.pkl",
-    "POWERMAX": "model_rf_nasional_powermax.pkl",
-    "SP":"model_gbt_nasional_sp.pkl",
-    "ANDALAS":"model_rf_nasional_andalas.pkl",
-    "MASONRY":"model_rf_nasional_masonry.pkl"
+    "ST" : "model_3_nasional_st.pkl",
+    "SG" : "model_3_nasional_sg.pkl",
+    "DYNAMIX":"model_3_nasional_dynamix.pkl",
+    "POWERMAX": "model_3_nasional_powermax.pkl",
+    "SP":"model_3_nasional_sp.pkl",
+    "ANDALAS":"model_3_nasional_andalas.pkl",
+    "MASONRY":"model_3_nasional_masonry.pkl"
 }
 
 model_pricing_retail = {
-    "ST" : "GBT_pricing_brand_sig_st_model_retail.pkl",
-    "SG" : "GBT_pricing_brand_sig_sg_model_retail.pkl",
-    "DYNAMIX":"GBT_pricing_brand_sig_dynamix_model_retail.pkl",
-    "POWERMAX": "GBT_pricing_brand_sig_powermax_model_retail.pkl",
-    "SP":"GBT_pricing_brand_sig_sp_model_retail.pkl",
-    "ANDALAS":"GBT_pricing_brand_sig_andalas_model_retail.pkl",
-    "MASONRY":"GBT_pricing_brand_sig_masonry_model_retail.pkl"
+    "ST" : "model_5_nasional_st_price (1).pkl",
+    "SG" : "model_5_nasional_sg_price (1).pkl",
+    "DYNAMIX":"model_5_nasional_dynamix_price (1).pkl",
+    "POWERMAX": "model_5_nasional_powermax_price (1).pkl",
+    "SP":"model_5_nasional_sp_price (1).pkl",
+    "ANDALAS":"model_5_nasional_andalas_price (1).pkl",
+    "MASONRY":"model_5_nasional_masonry_price (1).pkl"
 }
 
 
@@ -37,3 +37,5 @@ model_elasticity_b2b = {
     "Type II":"elasticity_brand_sig_type_ii_model_b2b_random_forest.pkl",
     "Type V":"elasticity_brand_sig_type_v_model_b2b_random_forest.pkl"
 }
+
+path_data_mapping_bisnis = './Modules/data/mapping_kategori_logika_bisnis.csv'

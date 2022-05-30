@@ -56,6 +56,11 @@ def prep_cbp_modelling_retail(data_simulation, data_predict):
 	data_simulation_retail = get_flag_change(data_simulation,'Price')
 	# data_simulation_retail['brand_name'] = list(map(lambda x,y: grouping_entity(x,y),data_simulation_retail['entity'],data_simulation_retail['material type']))
 	data_predict['period'] = list(map(lambda x: str(x),data_predict['period']))
+	data_simulation_retail['period'] = list(map(lambda x: str(x),data_simulation_retail['period']))
+
+	data_predict['year'] = list(map(lambda x: str(x)[:5],data_predict['period']))
+	data_simulation_retail['year'] = list(map(lambda x: str(x)[:5],data_simulation_retail['period']))
+
 	data_predict['province_name'] = list(map(lambda x: "DIY" if x=="DI YOGYAKARTA" else x,data_predict['province_name']))
 	data_model = pd.merge(
 		data_simulation_retail,
@@ -64,35 +69,17 @@ def prep_cbp_modelling_retail(data_simulation, data_predict):
 		right_on=['period', 'year', 'province_name','brand_name','kemasan', 'district_name']
 	)
 	data_model = data_model.groupby(['period', 'year', 'province_name','brand_name','kemasan', 'district_name']).first().reset_index()
-	data_model['prediction_price'] = data_model['prediction_price_x']
-	data_model['prediction_volume'] = data_model['prediction_volume']
+	# data_model['prediction_price'] = data_model['prediction_price_x']
+	# data_model['prediction_volume'] = data_model['prediction_volume']
 	data_model['volume'] = data_model['prediction_volume']
 	data_model['volume_lm'] = data_model['volume_lm_x']
-	data_model['htd_lm'] = data_model['htd_lm_x']
-	data_model['volume_rkap'] = data_model['volume_rkap_x']
-	data_model['rbp_rkap'] = data_model['rbp_rkap_x']
-	data_model['revenue_rkap'] = data_model['revenue_rkap_x']
-	data_model['district_ret'] = data_model['district_ret_x']
+	data_model['rbp_lm'] = data_model['rbp_lm_x']
+	data_model['ms_lm'] = data_model['ms_lm_x']
+	# data_model['rbp_lm'] = data_model['rbp_lm_x']
+	# data_model['rbp_rkap'] = data_model['rbp_rkap_x']
+	# data_model['revenue_rkap'] = data_model['revenue_rkap_x']
 	data_model['brand_name_2'] = data_model['brand_name_2_x']
-	data_model['oa_lm'] = data_model['oa_lm_x']
-	data_model=data_model[['period', 'province', 'ship to code', 'ship to name', 'district_ret',
-		'material type', 'packaging mode', 'year','month','packaging weight', 'entity',
-		'region smi', 'district desc smi', 'company code/opco', 'brand_name','brand_name_2',
-		'productive plant', 'shipping station l1 desc', 'incoterm', 'oa','oa_lm',
-		'var prod', 'trn', 'kmsn', 'var packer', 'fix packer', 'fix prod',
-		'adum', 'sales', 'com', 'biaya lain', 'oa ke customer', 'opt',
-		'freight n container', 'freight', 'opp', 'oa to pelabuhan',
-		'biaya social', 'gross margin distributor', 'margin distributor', 'wh allowance bpdd', 'pph', 'ppn',
-		'channel_trx', 'net margin ics', 'revenue', 'penj net', 'cont margin',
-		'gross margin', 'net margin', 'net margin grp', 'profit', 'last_price',
-		'harga jual sub dist', 'harga reguler zak', 'harga tebus incl tax',
-		'harga tebus excl tax', 'opco md excl tax', 'opco md netto excl tax',
-		'termofpayment', 'model', 'segment','prediction_price','prediction_volume',
-		'htd_lm','volume_rkap','rbp_rkap','revenue_rkap',
-		'simulation_status', 'flag_change', 'rbp_lm', 'volume', 
-		'disparitas_rbp_nbc_lm', 'volume_lm', 'rbp_nbc_lm', 'ms_nbc_lm', 
-		'growth_rbp_3month', 'growth_rbp_6month', 'province_name_kfold_target_enc',
-		'kemasan_kfold_target_enc','gpm','date_run','date_approve','simulation_id']]
+	# data_model['oa_lm'] = data_model['oa_lm_x']
 	return data_model
 
 
@@ -102,8 +89,8 @@ def prep_cbp_modelling_b2b(data_simulation, data_predict):
 	data_model = pd.merge(
 		data_simulation_b2b,
 		data_predict,
-		right_on=['period', 'year', 'province', 'ship_to_code', 'material_type'],
-		left_on=['period', 'year', 'province', 'ship to code', 'material type']
+		right_on=['period', 'province', 'ship_to_code', 'material_type'],
+		left_on=['period', 'province', 'ship to code', 'material type']
 	)
 
 	data_model['prediction_price'] = data_model['prediction_price_x']
@@ -113,9 +100,9 @@ def prep_cbp_modelling_b2b(data_simulation, data_predict):
 	data_model['material type'] = data_model['material_type']
 	data_model['last_price'] = data_model['last_price_y']
 
-	data_model=data_model[['period', 'year', 'month', 'province', 'brand_name_2', 'brand_name', 
+	data_model=data_model[['period', 'province', 'brand_name_2', 'brand_name', 
 	'ship to code', 'ship to name', 'material type', 'htd_lm', 'volume_lm', 'volume_rkap', 
-	'rbp_rkap', 'revenue_rkap', 'packaging mode', 'packaging weight', 'brand_name', 'district_ret', 
+	'rbp_rkap', 'revenue_rkap', 'packaging mode', 'packaging weight', 'brand_name',  
 	'entity', 'region smi', 'district desc smi', 'gpm', 'company code/opco', 'productive plant', 
 	'shipping station l1 desc', 'incoterm', 'oa', 'oa_lm', 'var prod', 'trn', 'kmsn', 'var packer', 
 	'fix packer', 'fix prod', 'adum', 'sales', 'com', 'biaya lain', 'oa ke customer', 'opt', 
@@ -158,6 +145,7 @@ def prep_vol_modelling_b2b(data_simulation, data_predict):
 def prep_vol_modelling_retail(data_simulation, data_predict):
 	data_simulation_retail = get_flag_change(data_simulation,'Volume')
 	data_predict['period'] = list(map(lambda x: str(x),data_predict['period']))
+	data_simulation_retail['period'] = list(map(lambda x: str(x),data_simulation_retail['period']))
 	data_predict['province_name'] = list(map(lambda x: "DIY" if x=="DI YOGYAKARTA" else x,data_predict['province_name']))
 	# data_simulation_retail['brand_name'] = list(map(lambda x,y: grouping_entity(x,y),data_simulation_retail['entity'],data_simulation_retail['material type']))
 	# data_predict = data_predict.groupby(['period', 'district_name', 'province_name', 'district_ret','brand_name', 'kemasan']).first().reset_index()
@@ -176,7 +164,17 @@ def prep_vol_modelling_retail(data_simulation, data_predict):
 		left_on=['period', 'province','brand_name','packaging weight', 'district desc smi'],
 		right_on=['period', 'province_name','brand_name','kemasan', 'district_name'],
 	)
+	# data_model['prediction_volume'] = data_model['prediction_volume_x']
+	# data_model['predict_high'] = data_model['predict_high_x']
+	# data_model['predict_low'] = data_model['predict_low_x']
+	# data_model['predict_med'] = data_model['predict_med_x']
+	data_model['rbp_lm'] = data_model['rbp_lm_x']
+	data_model['ms_lm'] = data_model['ms_lm_x']
+	data_model['volume_lm'] = data_model['volume_lm_x']
 	data_model['rbp']=data_model['prediction_price']
+	data_model['disparitas_rbp_nbc'] = data_model['rbp']-data_model['rbp_nbc_lm']
+	data_model['disparitas_rbp_lm'] = data_model['rbp_lm']-data_model['rbp_nbc_lm']
+	data_model['gap_disparity'] = data_model['disparitas_rbp_nbc']-data_model['disparitas_rbp_nbc_lm']
 	return data_model
 	# data_res_model = pd.DataFrame()
 	# if len(data_model)>0:
@@ -188,18 +186,13 @@ def prep_vol_modelling_retail(data_simulation, data_predict):
 		# return data_model
 
 
-def loop_apply_model_retail(brand_name,data_model,var_x,model_elasticity=model_elasticity_retail):
+def loop_apply_model_retail(brand_name,data_model,var_x,model_volume=model_elasticity_retail):
 	data_model_brand = data_model[data_model['brand_name']==brand_name]
 	if len(data_model_brand)>0:
-		algorithm = model_elasticity[brand_name]
+		algorithm = model_volume[brand_name]
 		file = open(F"./Modules/data/{algorithm}",'rb')
-
-		var_x = np.array(var_x)
-		var_takeout = "gap_rbp_{}".format(brand_name.lower())
-		idx = np.where(var_x == var_takeout)
-		var_x = np.delete(var_x, idx)
-
 		volume_model = pickle.load(file)
+		print(data_model_brand.columns)
 		pred_vol = volume_model.predict(data_model_brand[var_x])
 		data_model_brand['prediction_volume'] = pred_vol
 		# data_model_brand['prediction_volume'] = list(map(lambda x,y : x+((max_a-y)/(max_a-min_a)*mean_a),data_model_brand['volume_lm'],pred_vol))
@@ -266,26 +259,34 @@ def apply_model_b2b(data_model, flag):
 		return data_res
 
 
-def apply_rbp(price_lm,volume1,volume2):
-	price = price_lm + (-0.371789*(volume2-volume1))
-	return price
-
-
 def apply_model_retail(data_model, flag):
 	if flag == 'Price':
-		var_x = ['rbp_lm', 'volume', 'disparitas_rbp_nbc_lm', 'volume_lm', 'rbp_nbc_lm', 'ms_nbc_lm', 
-		'growth_rbp_3month', 'growth_rbp_6month', 'province_name_kfold_target_enc', 'kemasan_kfold_target_enc']
+		var_x = ['gap_rbp_sp_lm', 'ms_l2m', 'ms_lm', 'gap_disparity_lm', 'rbp_nbc_lm',
+			'gap_rbp_masonry_lm', 'rbp_l2m',
+			'gap_rbp_dynamix_lm', 'rbp_lm',
+			'gpm_zak_lm', 'is_seasonality', 'ms_nbc_l2m', 'volume',
+			'volume_l2m', 'gap_rbp_st_lm', 'rbp_nbc_l2m',
+			'gap_rbp_si_lm', 'stock_level',
+			'volume_lm', 'disparitas_rbp_nbc_l2m',
+			'gap_rbp_sg_lm', 'ms_nbc_lm', 'gap_rbp_powermax_lm', 
+			 "province_name_kfold_target_enc","kemasan_kfold_target_enc",
+			'gap_rbp_andalas_lm', 'disparitas_rbp_nbc_lm', 'gpm_zak_l2m','prediction_demand']
 		data_res = pd.DataFrame()
 		for brand in data_model['brand_name'].unique():
 			data_model_brand = loop_apply_model_price_retail(brand,data_model,var_x)
 			data_res = data_res.append(data_model_brand)
 		return data_res
 	elif flag == 'Volume':
-		data_model['volume_lm'] = data_model['volume_lm_x']
-		data_model['district_ret'] = data_model['district_ret_x']
-		var_x = ["volume_lm",'rbp','ms_lm','disparitas_rbp_lm','ms_nbc_lm',
-		'gap_disparitas_rbp','gap_rbp_andalas', 'gap_rbp_dynamix', 'gap_rbp_sp', 'gap_rbp_powermax',
-		'gap_rbp_sg', 'gap_rbp_masonry','gap_rbp_st', 'province_name_kfold_target_enc','kemasan_kfold_target_enc']
+		var_x = ['gap_rbp_sp_lm', 'ms_l2m', 'ms_lm', 'gap_disparity_lm', 'rbp_nbc_lm',
+				'gap_rbp_masonry_lm', 'rbp_l2m', 'rbp_nbc',
+				'gap_rbp_dynamix_lm', 'rbp_lm', 'gap_disparity',
+				'gpm_zak_lm', 'is_seasonality', 'ms_nbc_l2m', 'rbp',
+				'volume_l2m', 'gap_rbp_st_lm', 'rbp_nbc_l2m',
+				'gap_rbp_si_lm', 'stock_level',
+				'volume_lm', 'disparitas_rbp_nbc_l2m',
+				'gap_rbp_sg_lm', 'ms_nbc_lm', 'gap_rbp_powermax_lm', 
+				 "province_name_kfold_target_enc","kemasan_kfold_target_enc",
+				'gap_rbp_andalas_lm', 'disparitas_rbp_nbc_lm', 'gpm_zak_l2m','prediction_demand']
 		data_res = pd.DataFrame()
 		for brand in data_model['brand_name'].unique():
 			data_model_brand = loop_apply_model_retail(brand,data_model,var_x)
@@ -427,8 +428,8 @@ def calculate_cost(data_simulation, data_cost, retail_distrik_, retail_province_
 	'fix packer_x','fix prod_x',
 	'adum_x','sales_x','segment_x',
 	'company code/opco_x','ship to code_x',
-	'ship to name_x','material type_x', 'htd_inc_tax_ton',
-	'htd_inc_tax','kemasan_','weight_kemasan','predict_med_new_y','predict_med_new'
+	'ship to name_x','material type_x',
+	'htd_inc_tax','kemasan_','predict_med_new_y','predict_med_new'
 	]
 	data_simulation_cost_b2b_column = set(data_simulation_cost_b2b.columns)-set(drop_column)
 	data_simulation_cost_b2b = data_simulation_cost_b2b[data_simulation_cost_b2b_column]
@@ -446,7 +447,7 @@ def calculate_cost(data_simulation, data_cost, retail_distrik_, retail_province_
 		]
 	)
 
-	data_simulation_cost_retail['oa'] = data_simulation_cost_retail['oa_x']
+	data_simulation_cost_retail['oa'] = data_simulation_cost_retail['oa_lm']
 	data_simulation_cost_retail['var prod'] = data_simulation_cost_retail['var prod_x']
 	data_simulation_cost_retail['trn'] = data_simulation_cost_retail['trn_x']
 	data_simulation_cost_retail['kmsn'] = data_simulation_cost_retail['kmsn_x']
@@ -490,12 +491,13 @@ def calculate_cost(data_simulation, data_cost, retail_distrik_, retail_province_
 	data_simulation_cost_retail['ppn']=list(map(lambda x,y: ppn(x,y),data_simulation_cost_retail['district desc smi'], data_simulation_cost_retail['harga tebus excl tax']))
 	data_simulation_cost_retail['opco md excl tax'] = list(map(lambda a,b,c,d,e,f,g,h,i,j,k:OpcoMDExTax(a,b,c,d,e,f,g,h,i,j,k),data_simulation_cost_retail['entity'],data_simulation_cost_retail['harga tebus excl tax'],data_simulation_cost_retail['var prod'],data_simulation_cost_retail['var packer'],data_simulation_cost_retail['kmsn'],data_simulation_cost_retail['fix prod'],data_simulation_cost_retail['fix packer'],data_simulation_cost_retail['trn'],data_simulation_cost_retail['oa'],data_simulation_cost_retail['material type'],data_simulation_cost_retail['packaging mode']))
 	data_simulation_cost_retail['opco md netto excl tax'] = list(map(lambda a,b,c,d,e:OpcoMDNettoExTax(a,b,c,d,e),data_simulation_cost_retail['entity'],data_simulation_cost_retail['opco md excl tax'],data_simulation_cost_retail['oa'],data_simulation_cost_retail['com'],data_simulation_cost_retail['biaya lain']))
-	df_predict_cost_filter_opt_first_join_distrik = pd.merge(data_simulation_cost_retail,retail_distrik_,on=['period','province','district_ret'],how='left')
-	df_predict_cost_filter_opt_first_join_province = pd.merge(df_predict_cost_filter_opt_first_join_distrik,retail_province_,on=['period','province'])
-	
-	df_predict_cost_filter_opt_first_join_province['predict_med_new_y']=list(map(lambda x: 0 if x<=0 else x,df_predict_cost_filter_opt_first_join_province['predict_med_new_y']))
-	df_predict_cost_filter_opt_first_join_province['predict_med_new']=list(map(lambda x: 0 if x<=0 else x,df_predict_cost_filter_opt_first_join_province['predict_med_new_x']))
-	df_predict_cost_filter_opt_first_join_province['market_share'] = list(map(lambda v,x,y,z:0 if x<=0 else (x/y*100 if v!='UNKNOWN' else x/z*100),df_predict_cost_filter_opt_first_join_province['district_ret'],df_predict_cost_filter_opt_first_join_province['prediction_volume'],df_predict_cost_filter_opt_first_join_province['predict_med_new_y'],df_predict_cost_filter_opt_first_join_province['predict_med_new']))
+	# df_predict_cost_filter_opt_first_join_distrik = pd.merge(data_simulation_cost_retail,retail_distrik_,on=['period','province','district_ret'],how='left')
+	# df_predict_cost_filter_opt_first_join_province = pd.merge(df_predict_cost_filter_opt_first_join_distrik,retail_province_,on=['period','province'],how='left')
+	df_predict_cost_filter_opt_first_join_province = data_simulation_cost_retail
+	df_predict_cost_filter_opt_first_join_province['market_share'] = 0
+	# df_predict_cost_filter_opt_first_join_province['predict_med_new_y']=list(map(lambda x: 0 if x<=0 else x,df_predict_cost_filter_opt_first_join_province['predict_med_new_y']))
+	# df_predict_cost_filter_opt_first_join_province['predict_med_new']=list(map(lambda x: 0 if x<=0 else x,df_predict_cost_filter_opt_first_join_province['predict_med_new_x']))
+	# df_predict_cost_filter_opt_first_join_province['market_share'] = list(map(lambda v,x,y,z:0 if x<=0 else (x/y*100 if v!='UNKNOWN' else x/z*100),df_predict_cost_filter_opt_first_join_province['district_ret'],df_predict_cost_filter_opt_first_join_province['prediction_volume'],df_predict_cost_filter_opt_first_join_province['predict_med_new_y'],df_predict_cost_filter_opt_first_join_province['predict_med_new']))
 	# data_simulation_cost_retail['market_share'] = df_predict_cost_filter_opt_first_join_province['market_share']
 	data_simulation_cost_b2b['market_share'] = 0
 
@@ -506,10 +508,72 @@ def calculate_cost(data_simulation, data_cost, retail_distrik_, retail_province_
 	data_simulation_cost=data_simulation_cost_retail.append(data_simulation_cost_b2b,ignore_index=True)
 	data_simulation_cost = data_simulation_cost.groupby(['period', 'year', 'month', 'province', 'material type','packaging mode', 'packaging weight', 'brand_name','entity', 'region smi', 'district desc smi']).first().reset_index()
 
-
-
-
 	return data_simulation_cost
+
+
+def flagging_gain_loss(x):
+		if x<-20:
+			return 1
+		elif x<-10:
+			return 2
+		elif x<-5:
+			return 3
+		elif x<-2:
+			return 4
+		elif x<0:
+			return 5
+		elif x<2:
+			return 6
+		elif x<5:
+			return 7
+		elif x<10:
+			return 8
+		elif x<20:
+			return 9
+		else:
+			return 10
+
+
+def cek_makesense(data,path_mapping = path_data_mapping_bisnis):
+	data['gain_loss_profit'] = data['profit'] - data['profit_if_not_change']
+	data['gain_loss_demand'] = data['prediction_volume'] - data['demand_if_not_change']
+	data['gain_loss_revenue'] = data['revenue'] - data['revenue_if_not_change']
+	data['demand_lm'] = list(
+		map(
+			lambda x,y: x/(y/100) if y>0 else 0,
+			data['volume_lm'],
+			data['ms_lm']
+		)
+	)
+	data['gain_drop_ms'] = list(
+		map(
+			lambda a,b,c : ((a/b)*100)-c if b>0 else 0, 
+			data['prediction_volume'],
+			data['demand_lm'],
+			data['ms_lm']
+		)
+	)
+	data['gain_drop_rbp'] = list(
+		map(
+			lambda a,b : ((b-a)/a)*100 if a>0 else 0, 
+			data['rbp_lm'],
+			data['prediction_price']
+		)
+	)
+	data['flag_ms'] = list(map(lambda x: flagging_gain_loss(x),data['gain_drop_ms']))
+	data['flag_rbp'] = list(map(lambda x: flagging_gain_loss(x),data['gain_drop_rbp']))
+	data_mapping_business = pd.read_csv(path_data_mapping_bisnis)
+	data = pd.merge(data,data_mapping_business,on=['flag_rbp','flag_ms'])
+	data['keterangan_makesense'] = data['keterangan_makesense_y']
+	data['is_makesense'] = data['is_makesense_y']
+
+	drop_column = [
+	"keterangan_makesense_y","is_makesense_y","keterangan_makesense_x","is_makesense_x"
+	]
+	data_col = list(set(data.columns)-set(drop_column))
+	data = data[data_col]
+	return data
+
 
 
 def grouping_province(prov):
