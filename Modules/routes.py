@@ -21,8 +21,8 @@ def root():
 def predict():
 	print('start')
 	data_simulation = get_simulation_data(
-		engine = engine,tabel_simulation = 'simulation_test', 
-		simulation_status = "ready to run"
+		engine = engine,tabel_simulation = 'simulation_test_2_b2b', 
+		simulation_status = "finish"
 	)
 	if len(data_simulation)==0:
 		return jsonify({
@@ -34,10 +34,10 @@ def predict():
 
 	data_cost = get_cost_data(tabel_cost='tabel_cost_segment_test')
 	data_prediction_retail = get_cost_data(tabel_cost='tabel_rbp_retail_prediction_data_result_new')
-	data_prediction_b2b = get_cost_data(tabel_cost='tabel_cbp_b2b_prediction_data_result')
+	data_prediction_b2b = get_cost_data(tabel_cost='tabel_cbp_b2b_prediction_data_result_new')
 
 	data_volume_retail = get_cost_data(tabel_cost='datamodellingpriceelasticityretail_new')
-	data_volume_b2b = get_cost_data(tabel_cost='datamodellingpriceelasticityb2b')
+	data_volume_b2b = get_cost_data(tabel_cost='datamodellingpriceelasticityb2b_new')
 
 	retail_distrik = get_cost_data(tabel_cost='tabel_prediction_retail_district_test_weighted')
 	retail_distrik_ = retail_distrik[['period','province','district_ret','predict_med_new']]
@@ -97,11 +97,11 @@ def predict():
 	## Apply model B2B
 	if len(data_model_cbp_b2b) != 0:
 		data_res_cbp_b2b = apply_model_b2b(data_model_cbp_b2b,'Price')
-	# print(len(data_res_cbp_b2b))
+	print(len(data_res_cbp_b2b))
 
 	if len(data_model_volume_b2b) !=0:
 		data_res_volume_b2b = apply_model_b2b(data_model_volume_b2b,'Volume')
-	# print(len(data_res_volume_b2b))
+	print(len(data_res_volume_b2b))
 
 	## Apply model Retail
 	if len(data_model_cbp_retail) != 0:
@@ -127,15 +127,12 @@ def predict():
 		data_res = data_res.append(data_res_volume_b2b[kolom], ignore_index=True)
 	if len(data_model_cbp_retail) !=0:
 		data_res = data_res.append(data_res_cbp_retail[kolom], ignore_index=True)
-		print("cek ini dong")
-		print(len(data_res))
 	if len(data_model_volume_retail) !=0:
 		data_res = data_res.append(data_res_volume_retail[kolom], ignore_index=True)
-		print("cek ini dong")
-		print(len(data_res))
+
+	print(len(data_res))
 	print('progress_75%')
 
-	print(data_res[['prediction_volume','prediction_price']])
 
 	data_res_cost = calculate_cost(data_res, data_cost, retail_distrik_, retail_province_)
 	data_res_cost = data_res_cost[kolom]
@@ -150,7 +147,7 @@ def predict():
 	try:
 		status_update = update_simulation_data(
 			engine=engine,data_simulation=data_res_cek, 
-			status="finish", simulation_table='simulation_test'
+			status="finish", simulation_table='simulation_test_2_b2b'
 		)
 	except Exception as e:
 		return jsonify({
