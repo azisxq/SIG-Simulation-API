@@ -54,8 +54,8 @@ def grouping_entity(entity,material):
 
 def prep_cbp_modelling_retail(data_simulation, data_predict):
 	data_simulation_retail = get_flag_change(data_simulation,'Price')
-	data_predict['period'] = list(map(lambda x: str(x),data_predict['period']))
-	data_simulation_retail['period'] = list(map(lambda x: str(x),data_simulation_retail['period']))
+	data_predict['period'] = list(map(lambda x: int(x),data_predict['period']))
+	data_simulation_retail['period'] = list(map(lambda x: int(x),data_simulation_retail['period']))
 
 	data_predict['year'] = list(map(lambda x: str(x)[:5],data_predict['period']))
 	data_simulation_retail['year'] = list(map(lambda x: str(x)[:5],data_simulation_retail['period']))
@@ -82,6 +82,8 @@ def prep_cbp_modelling_b2b(data_simulation, data_predict):
 	data_simulation_b2b['ship to code'] = list(map(lambda x: str(x).replace('.0',''),data_simulation_b2b['ship to code']))
 	data_predict['ship_to_code'] = list(map(lambda x: str(x).replace('.0',''),data_predict['ship_to_code']))
 
+	data_simulation_b2b['period'] = list(map(lambda x: int(x),data_simulation_b2b['period']))
+	data_predict['period'] = list(map(lambda x: int(x),data_predict['period']))
 
 	data_model = pd.merge(
 		data_simulation_b2b,
@@ -112,6 +114,9 @@ def prep_vol_modelling_b2b(data_simulation, data_predict):
 	data_simulation_b2b['ship to code'] = list(map(lambda x: str(x).replace('.0',''),data_simulation_b2b['ship to code']))
 	data_predict['ship_to_code'] = list(map(lambda x: str(x).replace('.0',''),data_predict['ship_to_code']))
 
+	data_simulation_b2b['period'] = list(map(lambda x: int(x),data_simulation_b2b['period']))
+	data_predict['period'] = list(map(lambda x: int(x),data_predict['period']))
+
 	data_model = pd.merge(
 		data_simulation_b2b,
 		data_predict,
@@ -137,8 +142,8 @@ def prep_vol_modelling_b2b(data_simulation, data_predict):
 
 def prep_vol_modelling_retail(data_simulation, data_predict):
 	data_simulation_retail = get_flag_change(data_simulation,'Volume')
-	data_predict['period'] = list(map(lambda x: str(x),data_predict['period']))
-	data_simulation_retail['period'] = list(map(lambda x: str(x),data_simulation_retail['period']))
+	data_predict['period'] = list(map(lambda x: int(x),data_predict['period']))
+	data_simulation_retail['period'] = list(map(lambda x: int(x),data_simulation_retail['period']))
 	data_predict['province_name'] = list(map(lambda x: "DIY" if x=="DI YOGYAKARTA" else x,data_predict['province_name']))
 	# data_simulation_retail['brand_name'] = list(map(lambda x,y: grouping_entity(x,y),data_simulation_retail['entity'],data_simulation_retail['material type']))
 	# data_predict = data_predict.groupby(['period', 'district_name', 'province_name', 'district_ret','brand_name', 'kemasan']).first().reset_index()
