@@ -82,8 +82,10 @@ def prep_cbp_modelling_b2b(data_simulation, data_predict):
 	data_simulation_b2b['ship to code'] = list(map(lambda x: str(x).replace('.0',''),data_simulation_b2b['ship to code']))
 	data_predict['ship_to_code'] = list(map(lambda x: str(x).replace('.0',''),data_predict['ship_to_code']))
 
+
 	data_simulation_b2b['period'] = list(map(lambda x: int(x),data_simulation_b2b['period']))
 	data_predict['period'] = list(map(lambda x: int(x),data_predict['period']))
+
 
 	data_model = pd.merge(
 		data_simulation_b2b,
@@ -92,14 +94,17 @@ def prep_cbp_modelling_b2b(data_simulation, data_predict):
 		left_on=['period', 'province','material type','district desc smi','ship to name', 'ship to code']
 	)
 
-	data_model['volume'] = data_model['prediction_volume_x']
+
+	data_model['volume'] = data_model['prediction_volume']
+	data_model['delta_volume'] = data_model['volume']-data_model['volume_lm_y']
 	data_model['volume_lm'] = data_model['volume_lm_y']
-	data_model['volume_rkap'] = data_model['volume_rkap_x']
-	data_model['revenue_rkap'] = data_model['revenue_rkap_x']
-	data_model['volume_rkap'] = data_model['volume_rkap_x']
-	data_model['revenue_rkap'] = data_model['revenue_rkap_x']
+	# data_model['volume_rkap'] = data_model['volume_rkap_x']
+	# data_model['revenue_rkap'] = data_model['revenue_rkap_x']
+	# data_model['volume_rkap'] = data_model['volume_rkap_x']
+	# data_model['revenue_rkap'] = data_model['revenue_rkap_x']
 	data_model['prediction_price'] = data_model['prediction_price_x']
-	data_model['prediction_volume'] = data_model['prediction_volume_x']
+	data_model['termofpayment'] = data_model['termofpayment_y']
+
 
 	return data_model
 
@@ -124,7 +129,8 @@ def prep_vol_modelling_b2b(data_simulation, data_predict):
 		left_on=['period', 'province','material type','district desc smi','ship to name', 'ship to code']
 	)
 	data_model['cbp'] = data_model['prediction_price']
-	data_model['volume_lm'] = data_model['volume_lm_y']
+	data_model['delta_cbp'] = data_model['cbp']-data_model['cbp_lm']
+	data_model['termofpayment'] = data_model['termofpayment_y']
 	return data_model
 
 
@@ -148,12 +154,6 @@ def prep_vol_modelling_retail(data_simulation, data_predict):
 	# data_simulation_retail['brand_name'] = list(map(lambda x,y: grouping_entity(x,y),data_simulation_retail['entity'],data_simulation_retail['material type']))
 	# data_predict = data_predict.groupby(['period', 'district_name', 'province_name', 'district_ret','brand_name', 'kemasan']).first().reset_index()
 	# print(data_predict[['period', 'province_name','brand_name','packaging weight', 'district desc smi']].drop_duplicates())
-	print('FOCUS')
-	print(len(data_simulation_retail))
-	print(data_simulation_retail[['period', 'province','brand_name','packaging weight', 'district desc smi']])
-
-	print(len(data_predict))
-	print(data_predict[['period', 'province_name','brand_name','kemasan', 'district_name']])
 
 
 	data_model = pd.merge(
@@ -229,32 +229,28 @@ def loop_apply_model_b2b(material,data_model,var_x,model_elasticity=model_elasti
 
 def apply_model_b2b(data_model, flag):
 	if flag == 'Price':
-		file = open("./Modules/data/model_gradientboosting_b2b_v2p.pkl",'rb')
+		file = open("./Modules/data/model_gradientboosting_b2b_v2p_no_price.pkl",'rb')
 		price_model = pickle.load(file)
 		file.close()
 		var_x = [
-		'volume', 'cbp_nbc', 'cbp_lm', 'cbp_l2m', 'is_seasonality', 'sow_lm',
-		'sow_l2m', 'sow_nbc_lm', 'sow_nbc_l2m', 'volume_lm', 'volume_l2m',
-		'gap_cbp_opc_reguler_lm', 'gap_cbp_pcc_lm', 'gap_cbp_pcc_premium_lm',
-		'gap_cbp_opc_premium_lm', 'gap_cbp_owc_lm', 'gap_cbp_maxstrength_lm',
-		'gap_cbp_type_v_lm', 'gap_cbp_duramax_lm', 'gap_cbp_putih_lm',
-		'gap_cbp_sbc_lm', 'gap_cbp_type_ii_lm', 'gap_cbp_ppc_lm',
-		'gap_cbp_opc_lm', 'material_type_encoded', 'district_name_encoded',
-		'province_name_encoded'
+			'volume', 'cbp_nbc', 'is_seasonality', 'sow_lm', 'sow_l2m',
+			'sow_nbc_lm', 'sow_nbc_l2m', 'volume_lm', 'volume_l2m',
+			'disparitas_cbp_nbc_lm', 'disparitas_cbp_nbc_l2m', 'termofpayment',
+			'plant_to_distance_sig', 'plant_to_distance_sig_nbc', 'delta_volume',
+			'delta_volume_lm', 'material_type_encoded', 'province_name_encoded',
+			'segmentsi_encoded'
 		]
 		data_model['prediction_price'] = price_model.predict(data_model[var_x])
 		return data_model
 	elif flag == 'Volume':
-		file = open("./Modules/data/B2B_elasticity_GBoost_model.pkl",'rb')
+		file = open("./Modules/data/model_gradientboosting_b2b_p2v_no_volume.pkl",'rb')
 		volume_model = pickle.load(file)
 		var_x = ['cbp', 'cbp_nbc', 'cbp_lm', 'cbp_l2m', 'is_seasonality', 'sow_lm',
-		'sow_l2m', 'sow_nbc_lm', 'sow_nbc_l2m', 'volume_lm', 'volume_l2m',
-		'gap_cbp_opc_reguler_lm', 'gap_cbp_pcc_lm', 'gap_cbp_pcc_premium_lm',
-		'gap_cbp_opc_premium_lm', 'gap_cbp_owc_lm', 'gap_cbp_maxstrength_lm',
-		'gap_cbp_type_v_lm', 'gap_cbp_duramax_lm', 'gap_cbp_putih_lm',
-		'gap_cbp_sbc_lm', 'gap_cbp_type_ii_lm', 'gap_cbp_ppc_lm',
-		'gap_cbp_opc_lm', 'material_type_encoded', 'district_name_encoded',
-		'province_name_encoded']
+	       'sow_l2m', 'sow_nbc_lm', 'sow_nbc_l2m', 'disparitas_cbp_nbc_lm',
+	       'disparitas_cbp_nbc_l2m', 'termofpayment', 'plant_to_distance_sig',
+	       'plant_to_distance_sig_nbc', 'delta_cbp', 'delta_cbp_lm',
+	       'material_type_encoded', 'province_name_encoded', 'segmentsi_encoded',
+	       'district_name_encoded']
 		data_model['prediction_volume'] = volume_model.predict(data_model[var_x])
 		return data_model
 
@@ -399,13 +395,38 @@ def calculate_cost(data_simulation, data_cost, retail_distrik_, retail_province_
 				'province', 'ship to code','ship to name', 'material type',
 				'productive plant','shipping station l1 desc',
 				'incoterm','district desc smi'
-			]
+			],
+			how='left'
 		)
 
-		print(len(data_simulation_cost_b2b))
+		filler = {
+	        'segment_x': 'CorSales',
+	        'entity_x':'UNKNOWN',
+	        'company code/opco_x': 'UNKNOWN',
+	        'productive plant': 'UNKNOWN',
+	        'shipping station l1 desc': 'UNKNOWN',
+	        'packaging mode_x': 'Bulk',
+	        'region smi_x':'UNKNOWN',
+	        'incoterm_x':'UNKNOWN',
+	        'ship to code_x':'UNKNOWN',
+	        'ship to name_x':'UNKNOWN',
+	        'material type_x': 'UNKNOWN',
+	        'province_x':'UNKNOWN',
+	        'oa_x':0, 
+	        'var prod_x':0, 
+	        'trn_x':0, 
+	        'kmsn_x':0,
+	        'var packer_x':0, 
+	        'fix packer_x':0, 
+	        'fix prod_x':0, 
+	        'adum_x':0, 
+	        'sales_x':0
+	    }
+		
+		data_simulation_cost_b2b = data_simulation_cost_b2b.fillna(filler)
 
-		data_simulation_cost_b2b['entity'] = data_simulation_cost_b2b['entity_y']
-		data_simulation_cost_b2b['packaging mode'] = data_simulation_cost_b2b['packaging mode_y']
+		data_simulation_cost_b2b['entity'] = data_simulation_cost_b2b['entity_x']
+		data_simulation_cost_b2b['packaging mode'] = data_simulation_cost_b2b['packaging mode_x']
 		data_simulation_cost_b2b['oa'] = data_simulation_cost_b2b['oa_x']
 		data_simulation_cost_b2b['var prod'] = data_simulation_cost_b2b['var prod_x']
 		data_simulation_cost_b2b['trn'] = data_simulation_cost_b2b['trn_x']
@@ -421,7 +442,7 @@ def calculate_cost(data_simulation, data_cost, retail_distrik_, retail_province_
 		data_simulation_cost_b2b['region smi'] = data_simulation_cost_b2b['region smi_x']
 
 
-		data_simulation_cost_b2b['gross margin distributor'] = 0
+		data_simulation_cost_b2b['gross margin distributor'] = data_simulation_cost_b2b['margin distributor']+data_simulation_cost_b2b['oa ke customer']+data_simulation_cost_b2b['opt']+data_simulation_cost_b2b['freight n container']+data_simulation_cost_b2b['freight']+data_simulation_cost_b2b['opp']+data_simulation_cost_b2b['oa to pelabuhan']+data_simulation_cost_b2b['biaya social']+data_simulation_cost_b2b['com']
 		data_simulation_cost_b2b['htd_inc_tax_ton'] = data_simulation_cost_b2b['prediction_price']-data_simulation_cost_b2b['gross margin distributor']
 		data_simulation_cost_b2b['revenue'] = data_simulation_cost_b2b['htd_inc_tax_ton']*data_simulation_cost_b2b['prediction_volume']
 		data_simulation_cost_b2b['penj net'] = data_simulation_cost_b2b['htd_inc_tax_ton']-data_simulation_cost_b2b['oa']
@@ -445,16 +466,11 @@ def calculate_cost(data_simulation, data_cost, retail_distrik_, retail_province_
 		data_simulation_cost_b2b = data_simulation_cost_b2b[data_simulation_cost_b2b_column]
 		data_simulation_cost_b2b['market_share'] = 0
 		data_simulation_cost_b2b = data_simulation_cost_b2b.groupby([
-			'province', 'ship to code','ship to name', 'material type',
-			'productive plant','shipping station l1 desc',
-			'incoterm','district desc smi'
+			'period', 'ship to code','ship to name', 'material type',
+			'district desc smi'
 		]).first().reset_index()
 
 		data_simulation_cost = data_simulation_cost.append(data_simulation_cost_b2b,ignore_index=True)
-
-
-	print("cek len simulation cost")
-	print(len(data_simulation_cost))
 
 	data_simulation_retail = data_simulation[data_simulation['model']=='Retail']
 	if len(data_simulation_retail)>0:

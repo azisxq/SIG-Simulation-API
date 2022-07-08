@@ -65,6 +65,9 @@ def predict():
 	print('progress_30%')
 
 	data_simulation_b2b = data_simulation[data_simulation['model']=='B2B']
+
+	print(data_simulation_b2b[['period', 'province','material type','district desc smi','ship to name', 'ship to code','productive plant']])
+
 	data_simulation_retail = data_simulation[data_simulation['model']=='Retail']
 	print('data_simulation_b2b')
 	print(len(data_simulation_b2b))
@@ -77,9 +80,13 @@ def predict():
 	print('data_model_cbp_b2b')
 	print(len(data_model_cbp_b2b))
 	
+	print(data_model_cbp_b2b[['period', 'province','material type','district desc smi','ship to name', 'ship to code','productive plant']])
+
 	data_model_volume_b2b = prep_vol_modelling_b2b(data_simulation_b2b, data_volume_b2b)
 	print('data_model_volume_b2b')
 	print(len(data_model_volume_b2b))
+
+	print(data_model_volume_b2b[['period', 'province','material type','district desc smi','ship to name', 'ship to code','productive plant']])
 
 	## Pre Processing Retail
 	data_model_cbp_retail = prep_cbp_modelling_retail(data_simulation_retail, data_prediction_retail)
@@ -97,28 +104,31 @@ def predict():
 	## Apply model B2B
 	if len(data_model_cbp_b2b) != 0:
 		data_res_cbp_b2b = apply_model_b2b(data_model_cbp_b2b,'Price')
-	print(len(data_res_cbp_b2b))
+		print(len(data_res_cbp_b2b))
 
 	if len(data_model_volume_b2b) !=0:
 		data_res_volume_b2b = apply_model_b2b(data_model_volume_b2b,'Volume')
-	print(len(data_res_volume_b2b))
+		print(len(data_res_volume_b2b))
 
 	## Apply model Retail
 	if len(data_model_cbp_retail) != 0:
 		data_res_cbp_retail = apply_model_retail(data_model_cbp_retail,'Price')
-	# print(len(data_res_cbp_retail))
+		# print(len(data_res_cbp_retail))
 
 
 	if len(data_model_volume_retail) !=0:
 		data_res_volume_retail = apply_model_retail(data_model_volume_retail,'Volume')
-	# print(len(data_res_volume_retail))
+		# print(len(data_res_volume_retail))
 
 
 	# print(data_res_cbp_b2b.columns)
 	# print(data_res_volume_b2b.columns)
 	# print(data_res_cbp_retail.columns)
 	# print(data_res_volume_retail.columns)
-	
+
+
+	print(data_res_cbp_b2b[['period', 'province','material type','ship to name', 'ship to code','productive plant']])
+	print(data_res_volume_b2b[['period', 'province','material type','ship to name', 'ship to code','productive plant']])
 
 	data_res = pd.DataFrame()
 	if len(data_model_cbp_b2b) !=0:
@@ -133,7 +143,7 @@ def predict():
 	print(len(data_res))
 	print('progress_75%')
 
-
+	print(data_res[['period', 'province','material type','ship to name', 'ship to code','productive plant']])
 	data_res_cost = calculate_cost(data_res, data_cost, retail_distrik_, retail_province_)
 	data_res_cost = data_res_cost[kolom]
 	print(len(data_res_cost))
@@ -147,7 +157,7 @@ def predict():
 	try:
 		status_update = update_simulation_data(
 			engine=engine,data_simulation=data_res_cek, 
-			status="finish", simulation_table='simulation_test_2_b2b'
+			status="finish", simulation_table='simulation_test_2_b2b_res'
 		)
 	except Exception as e:
 		return jsonify({
