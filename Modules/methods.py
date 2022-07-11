@@ -213,23 +213,23 @@ def loop_apply_model_price_retail(brand_name,data_model,var_x,model_price=model_
 		pass
 
 
-def loop_apply_model_b2b(material,data_model,var_x,model_elasticity=model_elasticity_b2b):
-	data_model_material = data_model[data_model['material_type']==material]
-	algorithm = model_elasticity[material]
-	file = open(F"./Modules/data/{algorithm}",'rb')
-	volume_model = pickle.load(file)
-	pred_vol = volume_model.predict(data_model_material[var_x])
-	max_a = data_model_brand['volume_lm'].max()
-	min_a = data_model_brand['volume_lm'].min()
-	mean_a = data_model_brand['volume_lm'].mean()
-	data_model_material['prediction_volume'] = list(map(lambda x,y : x+((max_a-y)/(max_a-min_a)*mean_a),data_model_brand['volume_lm'],pred_vol))
-	data_model_material['prediction_volume'] = list(map(lambda x : 0 if x < 0 else x,data_model_material['prediction_volume']))
-	return data_model_material
+# def loop_apply_model_b2b(material,data_model,var_x,model_elasticity=model_elasticity_b2b):
+# 	data_model_material = data_model[data_model['material_type']==material]
+# 	algorithm = model_elasticity[material]
+# 	file = open(F"./Modules/data/{algorithm}",'rb')
+# 	volume_model = pickle.load(file)
+# 	pred_vol = volume_model.predict(data_model_material[var_x])
+# 	max_a = data_model_brand['volume_lm'].max()
+# 	min_a = data_model_brand['volume_lm'].min()
+# 	mean_a = data_model_brand['volume_lm'].mean()
+# 	data_model_material['prediction_volume'] = list(map(lambda x,y : x+((max_a-y)/(max_a-min_a)*mean_a),data_model_brand['volume_lm'],pred_vol))
+# 	data_model_material['prediction_volume'] = list(map(lambda x : 0 if x < 0 else x,data_model_material['prediction_volume']))
+# 	return data_model_material
 
 
 def apply_model_b2b(data_model, flag):
 	if flag == 'Price':
-		file = open("./Modules/data/model_gradientboosting_b2b_v2p_no_price.pkl",'rb')
+		file = open("./Modules/data/model_randomforest_b2b_v2p_no_price(1).pkl",'rb')
 		price_model = pickle.load(file)
 		file.close()
 		var_x = [
@@ -243,7 +243,7 @@ def apply_model_b2b(data_model, flag):
 		data_model['prediction_price'] = price_model.predict(data_model[var_x])
 		return data_model
 	elif flag == 'Volume':
-		file = open("./Modules/data/model_gradientboosting_b2b_p2v_no_volume.pkl",'rb')
+		file = open("./Modules/data/model_randomforest_b2b_p2v_no_volume(1).pkl",'rb')
 		volume_model = pickle.load(file)
 		var_x = ['cbp', 'cbp_nbc', 'cbp_lm', 'cbp_l2m', 'is_seasonality', 'sow_lm',
 	       'sow_l2m', 'sow_nbc_lm', 'sow_nbc_l2m', 'disparitas_cbp_nbc_lm',
