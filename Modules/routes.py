@@ -21,8 +21,8 @@ def root():
 def predict():
 	print('start')
 	data_simulation = get_simulation_data(
-		engine = engine,tabel_simulation = 'simulation_test_2_b2b', 
-		simulation_status = "finish"
+		engine = engine,tabel_simulation = 'simulation_test', 
+		simulation_status = "running"
 	)
 	if len(data_simulation)==0:
 		return jsonify({
@@ -127,8 +127,8 @@ def predict():
 	# print(data_res_volume_retail.columns)
 
 
-	print(data_res_cbp_b2b[['period', 'province','material type','ship to name', 'ship to code','productive plant']])
-	print(data_res_volume_b2b[['period', 'province','material type','ship to name', 'ship to code','productive plant']])
+	# print(data_res_cbp_b2b[['period', 'province','material type','ship to name', 'ship to code','productive plant']])
+	# print(data_res_volume_b2b[['period', 'province','material type','ship to name', 'ship to code','productive plant']])
 
 	data_res = pd.DataFrame()
 	if len(data_model_cbp_b2b) !=0:
@@ -142,6 +142,7 @@ def predict():
 
 	print(len(data_res))
 	print('progress_75%')
+	print(data_res.columns)
 
 	print(data_res[['period', 'province','material type','ship to name', 'ship to code','productive plant']])
 	data_res_cost = calculate_cost(data_res, data_cost, retail_distrik_, retail_province_)
@@ -276,14 +277,10 @@ def b2b_new_cust():
 		'district_ref':district_ref.lower(),
 		'demand':demand,
 		'material_type':material_type.lower(),
-		'material_type_kfold_target_enc':transform_encoded_new_cust('material_type',material_type.upper()),
 		'packaging_mode':packaging_mode.lower(),
-		'packaging_mode_kfold_target_enc':transform_encoded_new_cust('packaging_mode',packaging_mode.lower()),
 		'term_of_payment':term_of_payment,
 		'segmentsi': segment_si,
-		'segmentsi_kfold_target_enc':transform_encoded_new_cust('segmentsi',segment_si.lower()),
-		'cluster': cluster,
-		'cluster_kfold_target_enc':transform_encoded_new_cust('cluster',cluster.lower())
+		'cluster': cluster
 	},index=[0])
 
 	print('load data from redshift')

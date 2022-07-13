@@ -1,5 +1,6 @@
 from os import environ
 from Modules.routes import app
+from Modules.predict_new_cust_b2b import *
 
 app.run(host='0.0.0.0',port='8082')
 # import flask

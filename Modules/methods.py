@@ -82,10 +82,12 @@ def prep_cbp_modelling_b2b(data_simulation, data_predict):
 	data_simulation_b2b['ship to code'] = list(map(lambda x: str(x).replace('.0',''),data_simulation_b2b['ship to code']))
 	data_predict['ship_to_code'] = list(map(lambda x: str(x).replace('.0',''),data_predict['ship_to_code']))
 
+	print(len(data_simulation_b2b))
 
 	data_simulation_b2b['period'] = list(map(lambda x: int(x),data_simulation_b2b['period']))
 	data_predict['period'] = list(map(lambda x: int(x),data_predict['period']))
 
+	print(len(data_simulation_b2b))
 
 	data_model = pd.merge(
 		data_simulation_b2b,
@@ -94,6 +96,7 @@ def prep_cbp_modelling_b2b(data_simulation, data_predict):
 		left_on=['period', 'province','material type','district desc smi','ship to name', 'ship to code']
 	)
 
+	print(len(data_model))
 
 	data_model['volume'] = data_model['prediction_volume']
 	data_model['delta_volume'] = data_model['volume']-data_model['volume_lm_y']
@@ -633,6 +636,8 @@ def get_mapping_district_var(engine,tabel_mapping_var='mapping_district_var_cust
 	""".format(tabel_mapping_var)
 	data_mapping_district_var = pd.read_sql_query(statement, engine)
 	return data_mapping_district_var
+
+
 
 
 
