@@ -351,19 +351,12 @@ def b2b_new_cust():
 				}), 200
 
 	if merge_mapping['nbc_brand'][0]=='UNKNOWN':
-		merge_mapping = pd.merge(
-			b2b_req,
-			data_mapping,
-			left_on=['district','material_type'],
-			right_on=['district','material_type'],
-			how='left'
-		)
-	if merge_mapping['nbc_brand'][0]=='UNKNOWN':
 		if district_ref is None:
 			return jsonify({
 				'status': 'please specify district ref input because data is not found on district'
 			}), 400
 		else:
+			b2b_req['last_cbp_sig'] = merge_mapping['cbp_sig']
 			merge_mapping = pd.merge(
 				b2b_req,
 				data_mapping,
@@ -385,7 +378,7 @@ def b2b_new_cust():
 				}), 400
 			else:
 				pred = apply_model_cust_new_b2b(merge_mapping)
-				last_cbp_distrik = merge_mapping['cbp_sig'][0]
+				last_cbp_distrik = b2b_req['last_cbp_sig'][0]
 				print(pred)
 				return jsonify({
 					'recommended cbp': pred[0],
@@ -394,7 +387,7 @@ def b2b_new_cust():
 				}), 200
 	else:
 		pred = apply_model_cust_new_b2b(merge_mapping)
-		last_cbp_distrik = merge_mapping['cbp_sig'][0]
+		last_cbp_distrik = b2b_req['last_cbp_sig'][0]
 		print(pred)
 		return jsonify({
 			'recommended cbp': pred[0],

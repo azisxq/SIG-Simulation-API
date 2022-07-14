@@ -98,7 +98,8 @@ def apply_model_cust_new_b2b(data):
 	if 'district' not in data.columns:
 		data['district'] = data['district_x']
 	data['volume_sig'] = data['demand']
-	data['last_cbp_sig'] = data['cbp_sig']
+	if 'last_cbp_sig' not in data.columns:
+		data['last_cbp_sig'] = data['cbp_sig']
 	data['last_cbp_nbc'] = data['cbp_nbc']
 	data['province_name'] = data['province']
 	print(data.columns)
