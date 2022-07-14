@@ -93,13 +93,18 @@ class BayesianTargetEncoder(BaseEstimator, TransformerMixin):
 
 
 def apply_model_cust_new_b2b(data):
-	data['province'] = data['province_x']
+	if 'province' not in data.columns:
+		data['province'] = data['province_x']
+	if 'district' not in data.columns:
+		data['district'] = data['district_x']
 	data['volume_sig'] = data['demand']
 	data['last_cbp_sig'] = data['cbp_sig']
 	data['last_cbp_nbc'] = data['cbp_nbc']
 	data['province_name'] = data['province']
+	print(data.columns)
 	encoder= pickle.load(open("./Modules/data/encoder_model_new_customer_b2b.pkl", 'rb'))
 	data_encoded = encoder.transform(data)
+	print(data_encoded[['district','last_cbp_sig','district_encoded']])
 	var_x = [
 		'district_encoded',
 		'segmentsi_encoded',
