@@ -246,7 +246,7 @@ def apply_model_b2b(data_model, flag):
 		data_model['prediction_price'] = price_model.predict(data_model[var_x])
 		return data_model
 	elif flag == 'Volume':
-		file = open("./Modules/data/model_randomforest_b2b_p2v_no_volume(1).pkl",'rb')
+		file = open("./Modules/data/model_gradientboosting_b2b_p2v_no_volume(1).pkl",'rb')
 		volume_model = pickle.load(file)
 		var_x = ['cbp', 'cbp_nbc', 'cbp_lm', 'cbp_l2m', 'is_seasonality', 'sow_lm',
 	       'sow_l2m', 'sow_nbc_lm', 'sow_nbc_l2m', 'disparitas_cbp_nbc_lm',
