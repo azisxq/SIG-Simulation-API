@@ -286,7 +286,7 @@ def b2b_new_cust():
 	print('load data from redshift')
 	data_mapping = get_mapping_district_var(
 		engine,
-		tabel_mapping_var='mapping_district_var_customer_baru_test'
+		tabel_mapping_var='mapping_district_var_customer_baru'
 	)
 	print('load data selesai')
 	data_mapping['district'] = list(map(lambda x: x.lower(),data_mapping['district']))

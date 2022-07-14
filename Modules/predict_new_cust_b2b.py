@@ -97,20 +97,22 @@ def apply_model_cust_new_b2b(data):
 	data['volume_sig'] = data['demand']
 	data['last_cbp_sig'] = data['cbp_sig']
 	data['last_cbp_nbc'] = data['cbp_nbc']
+	data['province_name'] = data['province']
 	encoder= pickle.load(open("./Modules/data/encoder_model_new_customer_b2b.pkl", 'rb'))
 	data_encoded = encoder.transform(data)
 	var_x = [
-		'packaging_mode_encoded',
-		'last_cbp_nbc',
+		'district_encoded',
+		'segmentsi_encoded',
 		'plant_to_distance_sig',
 		'province_encoded',
+		'material_type_encoded',
 		'last_cbp_sig',
-		'term_of_payment',
-		'volume_sig',
+		'last_cbp_nbc',
 		'cluster_encoded',
-		'segmentsi_encoded',
+		'volume_sig',
 		'plant_to_distance_sig_nbc',
-		'material_type_encoded'
+		'packaging_mode_encoded',
+		'term_of_payment'
 	]
 	file = open("./Modules/data/model_b2b_new_cust.pkl",'rb')
 	cbp_model = pickle.load(file)
