@@ -38,4 +38,5 @@ model_elasticity_b2b = {
 	"Type V":"elasticity_brand_sig_type_v_model_b2b_random_forest.pkl"
 }
 
-path_data_mapping_bisnis = './Modules/data/mapping_kategori_logika_bisnis.csv'
+path_data_mapping_bisnis_retail = './Modules/data/mapping_kategori_logika_bisnis.csv'
+path_data_mapping_bisnis_b2b = './Modules/data/mapping_kategori_bisnis_b2b.csv'

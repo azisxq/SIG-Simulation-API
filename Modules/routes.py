@@ -22,7 +22,7 @@ def predict():
 	print('start')
 	data_simulation = get_simulation_data(
 		engine = engine,tabel_simulation = 'simulation_test', 
-		simulation_status = "running"
+		simulation_status = "finish"
 	)
 	if len(data_simulation)==0:
 		return jsonify({
@@ -151,7 +151,7 @@ def predict():
 
 	print('progress_85%')
 
-	data_res_cek = cek_makesense(data_res_cost,path_mapping = path_data_mapping_bisnis)
+	data_res_cek = cek_makesense(data_res_cost)
 	data_res_cek = data_res_cek[kolom]
 	print('progress_90%')
 
@@ -387,7 +387,7 @@ def b2b_new_cust():
 				}), 200
 	else:
 		pred = apply_model_cust_new_b2b(merge_mapping)
-		last_cbp_distrik = b2b_req['last_cbp_sig'][0]
+		last_cbp_distrik = merge_mapping['cbp_sig'][0]
 		print(pred)
 		return jsonify({
 			'recommended cbp': pred[0],

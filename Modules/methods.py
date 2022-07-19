@@ -447,8 +447,10 @@ def calculate_cost(data_simulation, data_cost, retail_distrik_, retail_province_
 
 		data_simulation_cost_b2b['gross margin distributor'] = data_simulation_cost_b2b['margin distributor']+data_simulation_cost_b2b['oa ke customer']+data_simulation_cost_b2b['opt']+data_simulation_cost_b2b['freight n container']+data_simulation_cost_b2b['freight']+data_simulation_cost_b2b['opp']+data_simulation_cost_b2b['oa to pelabuhan']+data_simulation_cost_b2b['biaya social']+data_simulation_cost_b2b['com']
 		data_simulation_cost_b2b['htd_inc_tax_ton'] = data_simulation_cost_b2b['prediction_price']-data_simulation_cost_b2b['gross margin distributor']
-		data_simulation_cost_b2b['revenue'] = data_simulation_cost_b2b['htd_inc_tax_ton']*data_simulation_cost_b2b['prediction_volume']
-		data_simulation_cost_b2b['penj net'] = data_simulation_cost_b2b['htd_inc_tax_ton']-data_simulation_cost_b2b['oa']
+		data_simulation_cost_b2b['harga tebus incl tax'] = data_simulation_cost_b2b['htd_inc_tax_ton']
+		data_simulation_cost_b2b['harga tebus excl tax'] = list(map(lambda a,b,c,d: HargaTebusExcTax(a,b,c,d),data_simulation_cost_b2b['district desc smi'],data_simulation_cost_b2b['entity'],data_simulation_cost_b2b['channel_trx'],data_simulation_cost_b2b['harga tebus incl tax']))
+		data_simulation_cost_b2b['revenue'] = data_simulation_cost_b2b['harga tebus excl tax']*data_simulation_cost_b2b['prediction_volume']
+		data_simulation_cost_b2b['penj net'] = data_simulation_cost_b2b['harga tebus excl tax']-data_simulation_cost_b2b['oa']
 		data_simulation_cost_b2b['cont margin'] = data_simulation_cost_b2b['penj net']-(data_simulation_cost_b2b['var prod']+data_simulation_cost_b2b['trn']+data_simulation_cost_b2b['kmsn']+data_simulation_cost_b2b['var packer'])
 		data_simulation_cost_b2b['gross margin'] = data_simulation_cost_b2b['cont margin']-(data_simulation_cost_b2b['fix packer']+data_simulation_cost_b2b['fix prod'])
 		data_simulation_cost_b2b['net margin'] = data_simulation_cost_b2b['gross margin']-data_simulation_cost_b2b['adum']-data_simulation_cost_b2b['sales']
@@ -573,10 +575,32 @@ def flagging_gain_loss(x):
 			return 10
 
 
-def cek_makesense(data,path_mapping = path_data_mapping_bisnis):
+def flagging_gain_loss_b2b(x):
+        if x<-5:
+            return 1
+        elif x<-3:
+            return 2
+        elif x<-1:
+            return 3
+        elif x<0:
+            return 4
+        elif x==0:
+            return 5
+        elif x<1:
+            return 6
+        elif x<3:
+            return 7
+        elif x<5:
+            return 8
+        else:
+            return 9
+
+
+def cek_makesense(data,path_mapping_retail = path_data_mapping_bisnis_retail,path_mapping_b2b=path_data_mapping_bisnis_b2b):
 	data['gain_loss_profit'] = data['profit'] - data['profit_if_not_change']
 	data['gain_loss_demand'] = data['prediction_volume'] - data['demand_if_not_change']
 	data['gain_loss_revenue'] = data['revenue'] - data['revenue_if_not_change']
+	col = data.columns
 	data['demand_lm'] = list(
 		map(
 			lambda x,y: x/(y/100) if y>0 else 0,
@@ -599,20 +623,31 @@ def cek_makesense(data,path_mapping = path_data_mapping_bisnis):
 			data['prediction_price']
 		)
 	)
-	data['flag_ms'] = list(map(lambda x: flagging_gain_loss(x),data['gain_drop_ms']))
-	data['flag_rbp'] = list(map(lambda x: flagging_gain_loss(x),data['gain_drop_rbp']))
-	data_mapping_business = pd.read_csv(path_data_mapping_bisnis)
-	data = pd.merge(data,data_mapping_business,on=['flag_rbp','flag_ms'])
-	data['keterangan_makesense'] = data['keterangan_makesense_y']
-	data['is_makesense'] = data['is_makesense_y']
-	print(data[['keterangan_makesense_y','keterangan_makesense_x']])
+	data_b2b = data[data['model']=='B2B']
+	data_retail = data[data['model']=='Retail']
+	# retail
+	data_retail['flag_ms'] = list(map(lambda x: flagging_gain_loss(x),data_retail['gain_drop_ms']))
+	data_retail['flag_rbp'] = list(map(lambda x: flagging_gain_loss(x),data_retail['gain_drop_rbp']))
+	data_mapping_business_retail = pd.read_csv(path_mapping_retail)
+	data_retail = pd.merge(data_retail,data_mapping_business_retail,on=['flag_rbp','flag_ms'])
+	data_retail['keterangan_makesense'] = data_retail['keterangan_makesense_y']
+	data_retail['is_makesense'] = data_retail['is_makesense_y']
+	# b2b
+	data_b2b['flag_ms'] = list(map(lambda x: flagging_gain_loss_b2b(x),data_b2b['gain_drop_ms']))
+	data_b2b['flag_rbp'] = list(map(lambda x: flagging_gain_loss_b2b(x),data_b2b['gain_drop_rbp']))
+	data_mapping_business_b2b = pd.read_csv(path_mapping_b2b)
+	data_b2b = pd.merge(data_b2b,data_mapping_business_b2b,on=['flag_rbp','flag_ms'])
+	data_b2b['keterangan_makesense'] = data_b2b['keterangan_makesense_y']
+	data_b2b['is_makesense'] = data_b2b['is_makesense_y']
+	data = data_retail[col]
+	data = data.append(data_b2b[col])
+
 	drop_column = [
 	"keterangan_makesense_y","is_makesense_y","keterangan_makesense_x","is_makesense_x"
 	]
 	data_col = list(set(data.columns)-set(drop_column))
 	data = data[data_col]
 	return data
-
 
 
 def grouping_province(prov):
