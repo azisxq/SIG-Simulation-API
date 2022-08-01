@@ -107,7 +107,6 @@ def apply_model_cust_new_b2b(data):
 		data['material_type'] = data['material_type_x']
 	data['volume_sig'] = data['demand']
 	data['province_name'] = data['province']
-	print(data.columns)
 	encoder= pickle.load(open("./Modules/data/encoder_model_new_customer_b2b (3).pkl", 'rb'))
 	data_encoded = encoder.transform(data)
 	var_x = [
@@ -126,12 +125,8 @@ def apply_model_cust_new_b2b(data):
 	scaler_model = pickle.load(open("./Modules/data/scaler_model_new_customer_b2b.pkl", 'rb'))
 	data_scaled = data_encoded
 	data_scaled[var_x] = scaler_model.transform(data_encoded[var_x])
-	print(data_encoded[['group_pelanggan','group_pelanggan_encoded']])
-	print(data_scaled.describe())
-	print(data_scaled['group_pelanggan_encoded'])
 	file = open("./Modules/data/model_linear_regression_b2b_new_cust.pkl",'rb')
 	cbp_model = pickle.load(file)
 	file.close()
 	prediction_cbp = cbp_model.predict(data_scaled[var_x])
-	print(prediction_cbp)
 	return prediction_cbp.tolist()[0]
