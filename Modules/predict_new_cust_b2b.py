@@ -97,31 +97,41 @@ def apply_model_cust_new_b2b(data):
 		data['province'] = data['province_x']
 	if 'district' not in data.columns:
 		data['district'] = data['district_x']
+	if 'cbp_nbc' not in data.columns:
+		data['last_cbp_nbc'] = data['cbp_nbc_x']
+	else:
+		data['last_cbp_nbc'] = data['cbp_nbc']
+	if 'packaging_mode' not in data.columns:
+		data['packaging_mode'] = data['packaging_mode_x']
+	if 'material_type' not in data.columns:
+		data['material_type'] = data['material_type_x']
 	data['volume_sig'] = data['demand']
-	if 'last_cbp_sig' not in data.columns:
-		data['last_cbp_sig'] = data['cbp_sig']
-	data['last_cbp_nbc'] = data['cbp_nbc']
 	data['province_name'] = data['province']
 	print(data.columns)
-	encoder= pickle.load(open("./Modules/data/encoder_model_new_customer_b2b.pkl", 'rb'))
+	encoder= pickle.load(open("./Modules/data/encoder_model_new_customer_b2b (3).pkl", 'rb'))
 	data_encoded = encoder.transform(data)
-	print(data_encoded[['district','last_cbp_sig','district_encoded']])
 	var_x = [
-		'district_encoded',
-		'segmentsi_encoded',
-		'plant_to_distance_sig',
-		'province_encoded',
-		'material_type_encoded',
-		'last_cbp_sig',
-		'last_cbp_nbc',
-		'cluster_encoded',
-		'volume_sig',
-		'plant_to_distance_sig_nbc',
-		'packaging_mode_encoded',
-		'term_of_payment'
-	]
-	file = open("./Modules/data/model_b2b_new_cust.pkl",'rb')
+	'group_pelanggan_encoded',
+ 	'plant_to_distance_sig_nbc',
+ 	'material_type_encoded',
+ 	'cluster_encoded',
+ 	'plant_to_distance_sig',
+ 	'volume_sig',
+ 	'packaging_mode_encoded',
+ 	'district_encoded',
+ 	'last_cbp_nbc',
+ 	'segmentsi_encoded',
+ 	'term_of_payment'
+ 	]
+	scaler_model = pickle.load(open("./Modules/data/scaler_model_new_customer_b2b.pkl", 'rb'))
+	data_scaled = data_encoded
+	data_scaled[var_x] = scaler_model.transform(data_encoded[var_x])
+	print(data_encoded[['group_pelanggan','group_pelanggan_encoded']])
+	print(data_scaled.describe())
+	print(data_scaled['group_pelanggan_encoded'])
+	file = open("./Modules/data/model_linear_regression_b2b_new_cust.pkl",'rb')
 	cbp_model = pickle.load(file)
 	file.close()
-	prediction_cbp = cbp_model.predict(data_encoded[var_x])
-	return prediction_cbp
+	prediction_cbp = cbp_model.predict(data_scaled[var_x])
+	print(prediction_cbp)
+	return prediction_cbp.tolist()[0]
