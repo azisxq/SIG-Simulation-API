@@ -113,16 +113,16 @@ def apply_model_cust_new_b2b(data):
 	data_encoded = encoder.transform(data)
 	var_x = [
 	'group_pelanggan_encoded',
- 	'plant_to_distance_sig_nbc',
- 	'material_type_encoded',
- 	'cluster_encoded',
- 	'plant_to_distance_sig',
- 	'volume_sig',
- 	'packaging_mode_encoded',
- 	'district_encoded',
- 	'last_cbp_nbc',
- 	'segmentsi_encoded',
- 	'term_of_payment'
+	'last_cbp_nbc',
+	'plant_to_distance_sig_nbc',
+	'material_type_encoded',
+	'cluster_encoded',
+	'plant_to_distance_sig',
+	'volume_sig',
+	'packaging_mode_encoded',
+	'term_of_payment',
+	'district_encoded',
+	'segmentsi_encoded'
  	]
 	scaler_model = pickle.load(open("./Modules/data/scaler_model_new_customer_b2b.pkl", 'rb'))
 	data_scaled = data_encoded

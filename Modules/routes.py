@@ -302,7 +302,7 @@ def b2b_new_cust():
 		'material_type':material_type.lower(),
 		'packaging_mode':packaging_mode.lower(),
 		'term_of_payment':term_of_payment,
-		'segmentsi': segment_si,
+		'segmentsi': segment_si.lower(),
 		'cluster': cluster.lower(),
 		'nbc_brand': nbc_brand,
 		'cbp_nbc': cbp_nbc
