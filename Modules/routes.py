@@ -339,10 +339,36 @@ def b2b_new_cust():
 				right_on=['district','material_type','nbc_brand'],
 				how='left'
 			)
+			if len(merge_mapping.dropna())==0:
+				merge_mapping = pd.merge(
+					b2b_req,
+					data_mapping,
+					left_on=['district','material_type'],
+					right_on=['district','material_type'],
+					how='left'
+				)
+				merge_mapping = merge_mapping[:1]
+				print(merge_mapping)
+				last_cbp_distrik = merge_mapping['cbp_sig'][0]
+				distance_to_plant_sig = merge_mapping['plant_to_distance_sig'][0]
+			else:
+				last_cbp_distrik = merge_mapping['cbp_sig'][0]
+				distance_to_plant_sig = merge_mapping['plant_to_distance_sig'][0]
+			merge_mapping = pd.merge(
+				b2b_req,
+				data_mapping,
+				left_on=['district_ref','material_type','nbc_brand'],
+				right_on=['district','material_type','nbc_brand'],
+				how='left'
+			)
+			print(last_cbp_distrik)
+			print(distance_to_plant_sig)
 			merge_mapping = merge_mapping[:1]
-			print(1)
+			merge_mapping['cbp_sig'] = last_cbp_distrik
+			merge_mapping['plant_to_distance_sig'] =  distance_to_plant_sig
+
+			print(merge_mapping)
 			pred = apply_model_cust_new_b2b(merge_mapping)
-			last_cbp_distrik = merge_mapping['cbp_sig'][0]
 			return jsonify({
 				'recommended cbp': pred[0],
 				'last cbp distrik': last_cbp_distrik,

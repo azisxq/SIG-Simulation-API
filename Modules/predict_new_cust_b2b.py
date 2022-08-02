@@ -93,6 +93,8 @@ class BayesianTargetEncoder(BaseEstimator, TransformerMixin):
 
 
 def apply_model_cust_new_b2b(data):
+	filler = pickle.load(open('./Modules/data/filler_new_cust.pkl', 'rb'))
+	data.fillna(filler)
 	if 'province' not in data.columns:
 		data['province'] = data['province_x']
 	if 'district' not in data.columns:
