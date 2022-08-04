@@ -40,3 +40,4 @@ model_elasticity_b2b = {
 
 path_data_mapping_bisnis_retail = './Modules/data/mapping_kategori_logika_bisnis.csv'
 path_data_mapping_bisnis_b2b = './Modules/data/mapping_kategori_bisnis_b2b.csv'
+path_data_mapping_bisnis_b2b_sow_100 = './Modules/data/mapping_kategori_bisnis_b2b_sow_100.csv'
