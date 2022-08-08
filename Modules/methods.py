@@ -644,6 +644,13 @@ def cek_makesense(
 	data_retail = pd.merge(data_retail,data_mapping_business_retail,on=['flag_rbp','flag_ms'])
 	data_retail['keterangan_makesense'] = data_retail['keterangan_makesense_y']
 	data_retail['is_makesense'] = data_retail['is_makesense_y']
+	data_retail['flagging_gain_drop_demand'] = list(
+        map(
+            lambda a,b : 1 if (((b-a)/a)*100) > 100 else 0,
+            data_retail['prediction_volume'],
+            data_retail['demand_if_not_change']
+        )
+    )
 	# b2b
 	df_sow_100 = data_b2b[data_b2b['ms_lm']==100]
 	df_sow_100['gain_drop_ms'] = df_sow_100['gain_loss_demand']/(df_sow_100['demand_if_not_change']+1)*100
@@ -662,6 +669,14 @@ def cek_makesense(
 	kol = df_sow_100.columns
 	data_b2b = df_sow_100[kol]
 	data_b2b = data_b2b.append(df_sow_not_100[kol])
+
+	data_b2b['flagging_gain_drop_demand'] = list(
+        map(
+            lambda a,b : 1 if (((b-a)/a)*100) > 100 else 0,
+            data_b2b['prediction_volume'],
+            data_b2b['demand_if_not_change']
+        )
+    )
 
 	data_b2b['keterangan_makesense'] = data_b2b['keterangan_makesense_y']
 	data_b2b['is_makesense'] = data_b2b['is_makesense_y']

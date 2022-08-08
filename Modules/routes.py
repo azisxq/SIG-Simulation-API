@@ -226,11 +226,6 @@ def b2b_new_cust():
 		return jsonify({
 			'status': 'please specify material type input'
 		}), 412
-	if material_type.upper() not in config.b2b_new_cust['material_type']:
-		return jsonify({
-			'status': 'material type not in model',
-			'details': 'you can only choose between this values {0!s}'.format(config.b2b_new_cust['material_type'])
-		}), 412
 
 	packaging_mode = utils.validate(
 		request.args, 'packaging_mode',
