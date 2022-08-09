@@ -673,8 +673,8 @@ def cek_makesense(
 	data_b2b['flagging_gain_drop_demand'] = list(
         map(
             lambda a,b : 1 if (((b-a)/a)*100) > 100 else 0,
-            data_b2b['prediction_volume'],
-            data_b2b['demand_if_not_change']
+            data_b2b['demand_if_not_change'],
+            data_b2b['prediction_volume']
         )
     )
 
