@@ -73,6 +73,9 @@ def prep_cbp_modelling_retail(data_simulation, data_predict):
 	data_model['rbp_lm'] = data_model['rbp_lm_x']
 	data_model['ms_lm'] = data_model['ms_lm_x']
 	data_model['brand_name_2'] = data_model['brand_name_2_x']
+	data_model['disparitas_rbp_nbc'] = data_model['rbp_nbc'] - data_model['rbp_nbc_lm']
+	data_model['gap_disparity_lm'] = data_model['disparitas_rbp_nbc_lm']-data_model['disparitas_rbp_nbc_l2m']
+	data_model['gap_disparity'] = data_model['disparitas_rbp_nbc']-data_model['disparitas_rbp_nbc_lm']
 	return data_model
 
 
@@ -101,10 +104,6 @@ def prep_cbp_modelling_b2b(data_simulation, data_predict):
 	data_model['volume'] = data_model['prediction_volume']
 	data_model['delta_volume'] = data_model['volume']-data_model['volume_lm_y']
 	data_model['volume_lm'] = data_model['volume_lm_y']
-	# data_model['volume_rkap'] = data_model['volume_rkap_x']
-	# data_model['revenue_rkap'] = data_model['revenue_rkap_x']
-	# data_model['volume_rkap'] = data_model['volume_rkap_x']
-	# data_model['revenue_rkap'] = data_model['revenue_rkap_x']
 	data_model['prediction_price'] = data_model['prediction_price_x']
 	data_model['termofpayment'] = data_model['termofpayment_y']
 
@@ -137,27 +136,13 @@ def prep_vol_modelling_b2b(data_simulation, data_predict):
 	return data_model
 
 
-	# data_res_model = pd.DataFrame()
-	# if len(data_model)>0:
-	# 	for material in data_model['material_type'].unique():
-	# 		data_mat = data_model[data_model['material_type']==material]
-	# 		material_type = material.lower().replace(' ','_')
-	# 		data_mat['gap_cbp_{0!s}'.format(material_type)] = list(map(lambda x,y:calculate_gap_cbp(x,y),data_mat['prediction_price'],data_mat['last_price']))
-	# 		data_res_model = data_res_model.append(data_mat)
-	# 	return data_res_model
-	# else:
-	# 	return data_model
-
 
 def prep_vol_modelling_retail(data_simulation, data_predict):
 	data_simulation_retail = get_flag_change(data_simulation,'Volume')
 	data_predict['period'] = list(map(lambda x: int(x),data_predict['period']))
 	data_simulation_retail['period'] = list(map(lambda x: int(x),data_simulation_retail['period']))
 	data_predict['province_name'] = list(map(lambda x: "DIY" if x=="DI YOGYAKARTA" else x,data_predict['province_name']))
-	# data_simulation_retail['brand_name'] = list(map(lambda x,y: grouping_entity(x,y),data_simulation_retail['entity'],data_simulation_retail['material type']))
-	# data_predict = data_predict.groupby(['period', 'district_name', 'province_name', 'district_ret','brand_name', 'kemasan']).first().reset_index()
-	# print(data_predict[['period', 'province_name','brand_name','packaging weight', 'district desc smi']].drop_duplicates())
-
+	
 
 	data_model = pd.merge(
 		data_simulation_retail,
@@ -165,10 +150,7 @@ def prep_vol_modelling_retail(data_simulation, data_predict):
 		left_on=['period', 'province','brand_name','packaging weight', 'district desc smi'],
 		right_on=['period', 'province_name','brand_name','kemasan', 'district_name'],
 	)
-	# data_model['prediction_volume'] = data_model['prediction_volume_x']
-	# data_model['predict_high'] = data_model['predict_high_x']
-	# data_model['predict_low'] = data_model['predict_low_x']
-	# data_model['predict_med'] = data_model['predict_med_x']
+
 	data_model['rbp_lm'] = data_model['rbp_lm_x']
 	data_model['ms_lm'] = data_model['ms_lm_x']
 	data_model['volume_lm'] = data_model['volume_lm_x']
@@ -177,14 +159,6 @@ def prep_vol_modelling_retail(data_simulation, data_predict):
 	data_model['disparitas_rbp_lm'] = data_model['rbp_lm']-data_model['rbp_nbc_lm']
 	data_model['gap_disparity'] = data_model['disparitas_rbp_nbc']-data_model['disparitas_rbp_nbc_lm']
 	return data_model
-	# data_res_model = pd.DataFrame()
-	# if len(data_model)>0:
-	# 	data_res_model['rbp']=data_res_model['prediction_price']
-	# 	print('data Retail model volume')
-	# 	print(len(data_res_model))
-	# 	return data_res_model
-	# else:
-		# return data_model
 
 
 def loop_apply_model_retail(brand_name,data_model,var_x,model_volume=model_elasticity_retail):
@@ -216,37 +190,22 @@ def loop_apply_model_price_retail(brand_name,data_model,var_x,model_price=model_
 		pass
 
 
-# def loop_apply_model_b2b(material,data_model,var_x,model_elasticity=model_elasticity_b2b):
-# 	data_model_material = data_model[data_model['material_type']==material]
-# 	algorithm = model_elasticity[material]
-# 	file = open(F"./Modules/data/{algorithm}",'rb')
-# 	volume_model = pickle.load(file)
-# 	pred_vol = volume_model.predict(data_model_material[var_x])
-# 	max_a = data_model_brand['volume_lm'].max()
-# 	min_a = data_model_brand['volume_lm'].min()
-# 	mean_a = data_model_brand['volume_lm'].mean()
-# 	data_model_material['prediction_volume'] = list(map(lambda x,y : x+((max_a-y)/(max_a-min_a)*mean_a),data_model_brand['volume_lm'],pred_vol))
-# 	data_model_material['prediction_volume'] = list(map(lambda x : 0 if x < 0 else x,data_model_material['prediction_volume']))
-# 	return data_model_material
-
-
 def apply_model_b2b(data_model, flag):
 	if flag == 'Price':
 		file = open("./Modules/data/model_randomforest_b2b_v2p_no_price(1).pkl",'rb')
 		price_model = pickle.load(file)
 		file.close()
 		var_x = [
-			'volume', 'cbp_nbc', 'is_seasonality', 'sow_lm', 'sow_l2m',
-			'sow_nbc_lm', 'sow_nbc_l2m', 'volume_lm', 'volume_l2m',
-			'disparitas_cbp_nbc_lm', 'disparitas_cbp_nbc_l2m', 'termofpayment',
-			'plant_to_distance_sig', 'plant_to_distance_sig_nbc', 'delta_volume',
-			'delta_volume_lm', 'material_type_encoded', 'province_name_encoded',
-			'segmentsi_encoded'
+			'volume', 'is_seasonality', 'sow_lm', 'sow_l2m', 'sow_nbc_lm',
+	        'sow_nbc_l2m', 'volume_lm', 'volume_l2m', 'termofpayment',
+	        'plant_to_distance_sig', 'plant_to_distance_sig_nbc', 'delta_volume',
+	        'delta_volume_lm', 'material_type_encoded', 'province_name_encoded',
+	        'segmentsi_encoded', 'packaging_mode_encoded', 'district_name_encoded'
 		]
 		data_model['prediction_price'] = price_model.predict(data_model[var_x])
 		return data_model
 	elif flag == 'Volume':
-		file = open("./Modules/data/model_gradientboosting_b2b_p2v_no_volume(1).pkl",'rb')
+		file = open("./Modules/data/model_randomforest_b2b_p2v_no_volume(1).pkl",'rb')
 		volume_model = pickle.load(file)
 		var_x = ['cbp', 'cbp_nbc', 'cbp_lm', 'cbp_l2m', 'is_seasonality', 'sow_lm',
 	       'sow_l2m', 'sow_nbc_lm', 'sow_nbc_l2m', 'disparitas_cbp_nbc_lm',
@@ -261,15 +220,15 @@ def apply_model_b2b(data_model, flag):
 def apply_model_retail(data_model, flag):
 	if flag == 'Price':
 		var_x = ['gap_rbp_sp_lm', 'ms_l2m', 'ms_lm', 'gap_disparity_lm', 'rbp_nbc_lm',
-			'gap_rbp_masonry_lm', 'rbp_l2m',
-			'gap_rbp_dynamix_lm', 'rbp_lm',
-			'gpm_zak_lm', 'is_seasonality', 'ms_nbc_l2m', 'volume',
-			'volume_l2m', 'gap_rbp_st_lm', 'rbp_nbc_l2m',
-			'gap_rbp_si_lm', 'stock_level',
-			'volume_lm', 'disparitas_rbp_nbc_l2m',
-			'gap_rbp_sg_lm', 'ms_nbc_lm', 'gap_rbp_powermax_lm', 
-			 "province_name_kfold_target_enc","kemasan_kfold_target_enc",
-			'gap_rbp_andalas_lm', 'disparitas_rbp_nbc_lm', 'gpm_zak_l2m','prediction_demand']
+            'gap_rbp_masonry_lm', 'rbp_l2m', 'rbp_nbc',
+            'gap_rbp_dynamix_lm', 'rbp_lm', 'gap_disparity',
+            'gpm_zak_lm', 'is_seasonality', 'ms_nbc_l2m', 'volume',
+            'volume_l2m', 'gap_rbp_st_lm', 'rbp_nbc_l2m',
+            'gap_rbp_si_lm', 'stock_level',
+            'volume_lm', 'disparitas_rbp_nbc_l2m',
+            'gap_rbp_sg_lm', 'ms_nbc_lm', 'gap_rbp_powermax_lm', 
+            "province_name_kfold_target_enc","kemasan_kfold_target_enc",
+            'gap_rbp_andalas_lm', 'disparitas_rbp_nbc_lm', 'gpm_zak_l2m','prediction_demand']
 		data_res = pd.DataFrame()
 		for brand in data_model['brand_name'].unique():
 			data_model_brand = loop_apply_model_price_retail(brand,data_model,var_x)
@@ -277,15 +236,15 @@ def apply_model_retail(data_model, flag):
 		return data_res
 	elif flag == 'Volume':
 		var_x = ['gap_rbp_sp_lm', 'ms_l2m', 'ms_lm', 'gap_disparity_lm', 'rbp_nbc_lm',
-				'gap_rbp_masonry_lm', 'rbp_l2m', 'rbp_nbc',
-				'gap_rbp_dynamix_lm', 'rbp_lm', 'gap_disparity',
-				'gpm_zak_lm', 'is_seasonality', 'ms_nbc_l2m', 'rbp',
-				'volume_l2m', 'gap_rbp_st_lm', 'rbp_nbc_l2m',
-				'gap_rbp_si_lm', 'stock_level',
-				'volume_lm', 'disparitas_rbp_nbc_l2m',
-				'gap_rbp_sg_lm', 'ms_nbc_lm', 'gap_rbp_powermax_lm', 
-				 "province_name_kfold_target_enc","kemasan_kfold_target_enc",
-				'gap_rbp_andalas_lm', 'disparitas_rbp_nbc_lm', 'gpm_zak_l2m','prediction_demand']
+            'gap_rbp_masonry_lm', 'rbp_l2m', 'rbp_nbc',
+            'gap_rbp_dynamix_lm', 'rbp_lm', 'gap_disparity',
+            'gpm_zak_lm', 'is_seasonality', 'ms_nbc_l2m', 'rbp',
+            'volume_l2m', 'gap_rbp_st_lm', 'rbp_nbc_l2m',
+            'gap_rbp_si_lm', 'stock_level',
+            'volume_lm', 'disparitas_rbp_nbc_l2m',
+            'gap_rbp_sg_lm', 'ms_nbc_lm', 'gap_rbp_powermax_lm', 
+            "province_name_kfold_target_enc","kemasan_kfold_target_enc",
+            'gap_rbp_andalas_lm', 'disparitas_rbp_nbc_lm', 'gpm_zak_l2m','prediction_demand']
 		data_res = pd.DataFrame()
 		for brand in data_model['brand_name'].unique():
 			data_model_brand = loop_apply_model_retail(brand,data_model,var_x)
@@ -541,14 +500,8 @@ def calculate_cost(data_simulation, data_cost, retail_distrik_, retail_province_
 		data_simulation_cost_retail['ppn']=list(map(lambda x,y: ppn(x,y),data_simulation_cost_retail['district desc smi'], data_simulation_cost_retail['harga tebus excl tax']))
 		data_simulation_cost_retail['opco md excl tax'] = list(map(lambda a,b,c,d,e,f,g,h,i,j,k:OpcoMDExTax(a,b,c,d,e,f,g,h,i,j,k),data_simulation_cost_retail['entity'],data_simulation_cost_retail['harga tebus excl tax'],data_simulation_cost_retail['var prod'],data_simulation_cost_retail['var packer'],data_simulation_cost_retail['kmsn'],data_simulation_cost_retail['fix prod'],data_simulation_cost_retail['fix packer'],data_simulation_cost_retail['trn'],data_simulation_cost_retail['oa'],data_simulation_cost_retail['material type'],data_simulation_cost_retail['packaging mode']))
 		data_simulation_cost_retail['opco md netto excl tax'] = list(map(lambda a,b,c,d,e:OpcoMDNettoExTax(a,b,c,d,e),data_simulation_cost_retail['entity'],data_simulation_cost_retail['opco md excl tax'],data_simulation_cost_retail['oa'],data_simulation_cost_retail['com'],data_simulation_cost_retail['biaya lain']))
-		# df_predict_cost_filter_opt_first_join_distrik = pd.merge(data_simulation_cost_retail,retail_distrik_,on=['period','province','district_ret'],how='left')
-		# df_predict_cost_filter_opt_first_join_province = pd.merge(df_predict_cost_filter_opt_first_join_distrik,retail_province_,on=['period','province'],how='left')
 		df_predict_cost_filter_opt_first_join_province = data_simulation_cost_retail
 		df_predict_cost_filter_opt_first_join_province['market_share'] = 0
-		# df_predict_cost_filter_opt_first_join_province['predict_med_new_y']=list(map(lambda x: 0 if x<=0 else x,df_predict_cost_filter_opt_first_join_province['predict_med_new_y']))
-		# df_predict_cost_filter_opt_first_join_province['predict_med_new']=list(map(lambda x: 0 if x<=0 else x,df_predict_cost_filter_opt_first_join_province['predict_med_new_x']))
-		# df_predict_cost_filter_opt_first_join_province['market_share'] = list(map(lambda v,x,y,z:0 if x<=0 else (x/y*100 if v!='UNKNOWN' else x/z*100),df_predict_cost_filter_opt_first_join_province['district_ret'],df_predict_cost_filter_opt_first_join_province['prediction_volume'],df_predict_cost_filter_opt_first_join_province['predict_med_new_y'],df_predict_cost_filter_opt_first_join_province['predict_med_new']))
-		# data_simulation_cost_retail['market_share'] = df_predict_cost_filter_opt_first_join_province['market_share']
 
 		data_simulation_cost_retail_column = set(df_predict_cost_filter_opt_first_join_province.columns)-set(drop_column)
 		data_simulation_cost_retail = df_predict_cost_filter_opt_first_join_province[data_simulation_cost_retail_column]
@@ -646,9 +599,9 @@ def cek_makesense(
 	data_retail['is_makesense'] = data_retail['is_makesense_y']
 	data_retail['flagging_gain_drop_demand'] = list(
         map(
-            lambda a,b : 1 if (((b-a)/a)*100) > 100 else 0,
-            data_retail['prediction_volume'],
-            data_retail['demand_if_not_change']
+            lambda a,b : 1 if (((b-a)/(a+1))*100) > 100 else 0,
+            data_retail['demand_if_not_change'],
+            data_retail['prediction_volume']
         )
     )
 	# b2b
@@ -672,7 +625,7 @@ def cek_makesense(
 
 	data_b2b['flagging_gain_drop_demand'] = list(
         map(
-            lambda a,b : 1 if (((b-a)/a)*100) > 100 else 0,
+            lambda a,b : 1 if (((b-a)/(a+1))*100) > 100 else 0,
             data_b2b['demand_if_not_change'],
             data_b2b['prediction_volume']
         )

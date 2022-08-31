@@ -21,8 +21,8 @@ def root():
 def predict():
 	print('start')
 	data_simulation = get_simulation_data(
-		engine = engine,tabel_simulation = 'simulation_test', 
-		simulation_status = "ready to run"
+		engine = engine,tabel_simulation = 'simulation_test_2', 
+		simulation_status = "finish"
 	)
 	if len(data_simulation)==0:
 		return jsonify({
@@ -52,16 +52,7 @@ def predict():
 	print(kolom)
 	print('data_simulation')
 	print(len(data_simulation))
-	# try:
-	# 	status_update = update_simulation_data(
-	# 		engine=engine,data_simulation=data_simulation, 
-	# 		status="running", simulation_table='simulation_test'
-	# 	)
-	# except Exception as e:
-	# 	print(e)
-	# 	return jsonify({
-	# 		'status': '{0!s}'.format(e)
-	# 	}), 400
+	
 	print('progress_30%')
 
 	data_simulation_b2b = data_simulation[data_simulation['model']=='B2B']
@@ -158,7 +149,7 @@ def predict():
 	try:
 		status_update = update_simulation_data(
 			engine=engine,data_simulation=data_res_cek, 
-			status="finish", simulation_table='simulation_test'
+			status="finish", simulation_table='simulation_test_2'
 		)
 	except Exception as e:
 		return jsonify({
@@ -280,7 +271,7 @@ def b2b_new_cust():
 
 	cbp_nbc = utils.validate(
 		request.args, 'cbp_nbc',
-		int, 0
+		float, 0
 	)
 
 	nbc_brand = utils.validate(
