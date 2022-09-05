@@ -85,12 +85,8 @@ def prep_cbp_modelling_b2b(data_simulation, data_predict):
 	data_simulation_b2b['ship to code'] = list(map(lambda x: str(x).replace('.0',''),data_simulation_b2b['ship to code']))
 	data_predict['ship_to_code'] = list(map(lambda x: str(x).replace('.0',''),data_predict['ship_to_code']))
 
-	print(len(data_simulation_b2b))
-
 	data_simulation_b2b['period'] = list(map(lambda x: int(x),data_simulation_b2b['period']))
 	data_predict['period'] = list(map(lambda x: int(x),data_predict['period']))
-
-	print(len(data_simulation_b2b))
 
 	data_model = pd.merge(
 		data_simulation_b2b,
@@ -98,8 +94,6 @@ def prep_cbp_modelling_b2b(data_simulation, data_predict):
 		right_on=['period','province_name', 'material_type','district_name', 'ship_to_name', 'ship_to_code'],
 		left_on=['period', 'province','material type','district desc smi','ship to name', 'ship to code']
 	)
-
-	print(len(data_model))
 
 	data_model['volume'] = data_model['prediction_volume']
 	data_model['delta_volume'] = data_model['volume']-data_model['volume_lm_y']
@@ -118,6 +112,7 @@ def calculate_gap_cbp(price,last_price):
 def prep_vol_modelling_b2b(data_simulation, data_predict):
 	data_simulation_b2b = get_flag_change(data_simulation,'Volume')
 
+
 	data_simulation_b2b['ship to code'] = list(map(lambda x: str(x).replace('.0',''),data_simulation_b2b['ship to code']))
 	data_predict['ship_to_code'] = list(map(lambda x: str(x).replace('.0',''),data_predict['ship_to_code']))
 
@@ -130,6 +125,7 @@ def prep_vol_modelling_b2b(data_simulation, data_predict):
 		right_on=['period','province_name', 'material_type','district_name', 'ship_to_name', 'ship_to_code'],
 		left_on=['period', 'province','material type','district desc smi','ship to name', 'ship to code']
 	)
+
 	data_model['cbp'] = data_model['prediction_price']
 	data_model['delta_cbp'] = data_model['cbp']-data_model['cbp_lm']
 	data_model['termofpayment'] = data_model['termofpayment_y']
@@ -167,7 +163,6 @@ def loop_apply_model_retail(brand_name,data_model,var_x,model_volume=model_elast
 		algorithm = model_volume[brand_name]
 		file = open(F"./Modules/data/{algorithm}",'rb')
 		volume_model = pickle.load(file)
-		print(data_model_brand.columns)
 		pred_vol = volume_model.predict(data_model_brand[var_x])
 		data_model_brand['prediction_volume'] = pred_vol
 		# data_model_brand['prediction_volume'] = list(map(lambda x,y : x+((max_a-y)/(max_a-min_a)*mean_a),data_model_brand['volume_lm'],pred_vol))
@@ -227,7 +222,7 @@ def apply_model_retail(data_model, flag):
             'gap_rbp_si_lm', 'stock_level',
             'volume_lm', 'disparitas_rbp_nbc_l2m',
             'gap_rbp_sg_lm', 'ms_nbc_lm', 'gap_rbp_powermax_lm', 
-            "province_name_kfold_target_enc","kemasan_kfold_target_enc",
+            "district_name_kfold_target_enc","kemasan_kfold_target_enc",
             'gap_rbp_andalas_lm', 'disparitas_rbp_nbc_lm', 'gpm_zak_l2m','prediction_demand']
 		data_res = pd.DataFrame()
 		for brand in data_model['brand_name'].unique():
@@ -243,7 +238,7 @@ def apply_model_retail(data_model, flag):
             'gap_rbp_si_lm', 'stock_level',
             'volume_lm', 'disparitas_rbp_nbc_l2m',
             'gap_rbp_sg_lm', 'ms_nbc_lm', 'gap_rbp_powermax_lm', 
-            "province_name_kfold_target_enc","kemasan_kfold_target_enc",
+            "district_name_kfold_target_enc","kemasan_kfold_target_enc",
             'gap_rbp_andalas_lm', 'disparitas_rbp_nbc_lm', 'gpm_zak_l2m','prediction_demand']
 		data_res = pd.DataFrame()
 		for brand in data_model['brand_name'].unique():
@@ -323,7 +318,7 @@ def ppn(district, harga_tebus):
 	if 'batam' in district.lower():
 		return 0
 	else:
-		return harga_tebus*0.1
+		return harga_tebus*0.11
 
 
 def calculate_cost(data_simulation, data_cost, retail_distrik_, retail_province_):
